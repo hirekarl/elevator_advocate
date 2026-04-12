@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, ProgressBar, ListGroup, Badge, Alert, Row, Col, Button, Toast, ToastContainer } from 'react-bootstrap';
+import { Card, ProgressBar, ListGroup, Badge, Alert, Row, Col, Button, Toast, ToastContainer, Modal, Form } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 
 interface BuildingDetailProps {
@@ -15,6 +15,11 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVariant, setToastVariant] = useState('primary');
+
+  // Advocacy Modal State
+  const [showAdvocacyModal, setShowAdvocacyModal] = useState(false);
+  const [advocacyFormData, setAdvocacyFormData] = useState({ sr_number: '', description: '' });
+  const [isSubmittingLog, setIsSubmittingLog] = useState(false);
 
   const triggerToast = (msg: string, variant: string = 'primary') => {
     setToastMessage(msg);
@@ -47,9 +52,97 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
 
   const tenantReports = buildingData.recent_reports?.filter((r: any) => !r.is_official) || [];
   const officialReports = buildingData.recent_reports?.filter((r: any) => r.is_official) || [];
+  const advocacyLogs = buildingData.advocacy_logs || [];
+
+  const handleReport = async (status: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) return triggerToast("Please log in to report status.", "warning");
+    
+    try {
+      const res = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/report_status/`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        triggerToast(`Status reported as ${status}!`, "success");
+        // Reload building data would happen here via parent refresh
+      }
+    } catch (e) {
+      triggerToast("Error sending report.", "danger");
+    }
+  };
+
+  const handleLogAdvocacy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingLog(true);
+    const token = localStorage.getItem('token');
+    
+    try {
+      const res = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/log_advocacy_action/`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify(advocacyFormData)
+      });
+      if (res.ok) {
+        triggerToast("Complaint logged to your paper trail!", "success");
+        setShowAdvocacyModal(false);
+        setAdvocacyFormData({ sr_number: '', description: '' });
+        // Ideally trigger parent refresh here
+      } else {
+        const data = await res.json();
+        triggerToast(data.error || "Failed to log complaint.", "danger");
+      }
+    } catch (e) {
+      triggerToast("Network error.", "danger");
+    } finally {
+      setIsSubmittingLog(false);
+    }
+  };
 
   return (
     <div className="building-action-center">
+      {/* 311 Log Modal */}
+      <Modal show={showAdvocacyModal} onHide={() => setShowAdvocacyModal(false)} centered>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">Log 311 Complaint</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-3">
+          <p className="text-secondary small mb-4">Martha, if you called 311, enter the number they gave you here. This helps you track the city's response.</p>
+          <Form onSubmit={handleLogAdvocacy}>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold small">Service Request (SR) Number</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="e.g. 1-1-7654321" 
+                required
+                value={advocacyFormData.sr_number}
+                onChange={(e) => setAdvocacyFormData({...advocacyFormData, sr_number: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-4">
+              <Form.Label className="fw-bold small">Notes (Optional)</Form.Label>
+              <Form.Control 
+                as="textarea" 
+                rows={2} 
+                placeholder="e.g. Spoke to operator 42, they said 3 days."
+                value={advocacyFormData.description}
+                onChange={(e) => setAdvocacyFormData({...advocacyFormData, description: e.target.value})}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit" className="w-100 fw-bold py-2" disabled={isSubmittingLog}>
+              {isSubmittingLog ? "Saving..." : "Save to My History"}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
       {/* Feedback Toast */}
       <ToastContainer position="top-end" className="p-3" style={{ zIndex: 9999 }}>
         <Toast 
@@ -63,6 +156,37 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
           <Toast.Body className="fw-medium">{toastMessage}</Toast.Body>
         </Toast>
       </ToastContainer>
+
+      {/* MARTHA-MODE: Quick Report Buttons */}
+      <Card className="border-0 shadow-sm mb-4 bg-warning-subtle border-start border-warning border-4">
+        <Card.Body className="p-4">
+          <h5 className="fw-bold mb-3">Is the elevator working right now?</h5>
+          <div className="d-grid gap-3 d-md-flex">
+            <Button 
+              variant="success" 
+              className="px-4 py-3 fw-bold fs-5 shadow-sm"
+              onClick={() => handleReport('UP')}
+            >
+              ✅ YES, IT'S WORKING
+            </Button>
+            <Button 
+              variant="danger" 
+              className="px-4 py-3 fw-bold fs-5 shadow-sm"
+              onClick={() => handleReport('DOWN')}
+            >
+              ❌ NO, IT'S BROKEN
+            </Button>
+            <Button 
+              variant="warning" 
+              className="px-4 py-3 fw-bold fs-5 shadow-sm text-dark"
+              onClick={() => handleReport('SLOW')}
+            >
+              ⚠️ IT'S SLOW / UNSAFE
+            </Button>
+          </div>
+          <p className="mt-3 mb-0 text-secondary small">Martha, just tap the big button above to tell your neighbors what you see at the elevator.</p>
+        </Card.Body>
+      </Card>
 
       <Card className="border-0 shadow-sm mb-4">
         <Card.Body className="p-4">
@@ -193,8 +317,88 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
         </Card.Body>
       </Card>
 
+      <h4 className="fw-bold mb-4 mt-5">Advocate Toolkit</h4>
+      <Card className="border-0 shadow-sm mb-5 bg-light">
+        <Card.Body className="p-4">
+          <Row className="align-items-center">
+            <Col md={8}>
+              <h5 className="fw-bold mb-2">Help Martha Advocate</h5>
+              <p className="text-secondary mb-0">Does your niece or an advocate need to help you? This section provides hard data they can use when calling elected officials or the building manager.</p>
+            </Col>
+            <Col md={4} className="text-md-end mt-3 mt-md-0">
+              <Button 
+                variant="outline-primary" 
+                className="fw-bold rounded-pill px-4"
+                onClick={() => {
+                  const summary = `Elevator Advocacy Report: ${buildingData.address}\n` +
+                    `- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n` +
+                    `- Current Status: ${buildingData.verified_status}\n` +
+                    `- Legal Code: NYC Admin Code §27-2005 (Housing Maintenance Code)\n` +
+                    `- My Active Complaints: ${advocacyLogs.length} logged in my paper trail.`;
+                  
+                  navigator.clipboard.writeText(summary);
+                  triggerToast("Advocacy Summary copied for sharing!", "success");
+                }}
+              >
+                Copy Advocacy Summary
+              </Button>
+            </Col>
+          </Row>
+          <hr className="my-4 opacity-10" />
+          <div className="d-flex flex-wrap gap-2">
+            <Badge bg="dark" className="px-3 py-2 fw-medium">Share via WhatsApp</Badge>
+            <Badge bg="dark" className="px-3 py-2 fw-medium">Email Representative</Badge>
+            <Badge bg="dark" className="px-3 py-2 fw-medium">Download Hardship PDF (Coming Soon)</Badge>
+          </div>
+        </Card.Body>
+      </Card>
+
       <h4 className="fw-bold mb-4">Historical Action Timeline</h4>
       
+      <Row className="mb-5">
+        <Col md={12}>
+          <Card className="border-0 shadow-sm border-start border-primary border-4">
+            <Card.Header className="bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+              <div>
+                <h5 className="fw-bold mb-0">Advocacy Paper Trail</h5>
+                <p className="small text-secondary fw-medium">Track your 311 complaints and legal evidence here.</p>
+              </div>
+              <Button 
+                variant="primary" 
+                size="sm" 
+                className="rounded-pill px-3 fw-bold"
+                onClick={() => setShowAdvocacyModal(true)}
+              >
+                + Log 311 Complaint
+              </Button>
+            </Card.Header>
+            <Card.Body className="px-4 pb-4">
+              {advocacyLogs.length > 0 ? (
+                <ListGroup variant="flush">
+                  {advocacyLogs.map((log: any, idx: number) => (
+                    <ListGroup.Item key={idx} className="px-0 py-3 border-light">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <span className="badge bg-primary-subtle text-primary mb-2 me-2">SR {log.sr_number}</span>
+                          <span className={`badge ${log.outcome === 'Pending' ? 'bg-secondary' : 'bg-info'} mb-2`}>{log.outcome}</span>
+                          <p className="mb-1 fw-bold">{log.description || "311 Complaint Filed"}</p>
+                          <small className="text-secondary">{new Date(log.created_at).toLocaleString()}</small>
+                        </div>
+                      </div>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              ) : (
+                <Alert variant="light" className="border-dashed py-4 text-center">
+                  <p className="mb-0 text-secondary">No personal advocacy history logged yet.</p>
+                  <small className="text-muted italic">Log a 311 number to start your paper trail.</small>
+                </Alert>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
       <Row>
         <Col md={6}>
           <Card className="h-100 border-0 shadow-sm">

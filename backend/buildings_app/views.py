@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from .logic import ConsensusManager
 from .models import Building
 from .serializers import (
+    AdvocacyLogSerializer,
     BuildingSerializer,
     ElevatorReportSerializer,
     ReportStatusSerializer,
@@ -194,6 +195,30 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
         from .ai_logic import AdvocacyStrategist
         script_data = AdvocacyStrategist.generate_311_script(building)
         return Response(script_data)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def log_advocacy_action(self, request, bin=None):
+        """
+        Allows Martha or her niece to log a 311 complaint or legal action.
+        """
+        building = self.get_object()
+        sr_number = request.data.get('sr_number')
+        description = request.data.get('description', '')
+        outcome = request.data.get('outcome', 'Pending')
+
+        if not sr_number:
+            return Response({"error": "Service Request (SR) number is required."}, status=400)
+
+        from .models import AdvocacyLog
+        log = AdvocacyLog.objects.create(
+            building=building,
+            user=request.user,
+            sr_number=sr_number,
+            description=description,
+            outcome=outcome
+        )
+
+        return Response(AdvocacyLogSerializer(log).data, status=201)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def refresh_news(self, request, bin=None):

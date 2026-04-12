@@ -84,3 +84,24 @@ class UserProfile(models.Model):
     
     def __str__(self) -> str:
         return f"Profile for {self.user.username}"
+
+
+class AdvocacyLog(models.Model):
+    """
+    Tracks 311 Service Requests (SR) and legal actions by users for a building.
+    Creates a persistent "Paper Trail" for accountability.
+    """
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='advocacy_logs')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='advocacy_logs')
+    sr_number = models.CharField(max_length=50, verbose_name="311 Service Request #")
+    description = models.TextField(blank=True, help_text="Any extra notes Martha or her niece want to track.")
+    outcome = models.CharField(max_length=200, blank=True, help_text="E.g., 'Inspected', 'Closed - No Violation Found'.")
+    created_at = models.DateTimeField(db_default=Now())
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Advocacy Logs"
+        ordering = ['-created_at']
+
+    def __str__(self) -> str:
+        return f"SR {self.sr_number} at {self.building.address}"

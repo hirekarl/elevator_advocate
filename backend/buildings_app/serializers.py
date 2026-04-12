@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Building, BuildingNews, ElevatorReport
+from .models import AdvocacyLog, Building, BuildingNews, ElevatorReport
 
 
 class BuildingNewsSerializer(serializers.ModelSerializer):
@@ -11,6 +11,14 @@ class BuildingNewsSerializer(serializers.ModelSerializer):
         model = BuildingNews
         fields = ['title', 'url', 'source', 'published_date', 'summary', 'relevance_score']
 
+class AdvocacyLogSerializer(serializers.ModelSerializer):
+    """
+    Tracks the paper trail for specific users (Martha, Niece).
+    """
+    class Meta:
+        model = AdvocacyLog
+        fields = ['id', 'sr_number', 'description', 'outcome', 'created_at']
+
 class BuildingSerializer(serializers.ModelSerializer):
     """
     Serializer for NYC Building data.
@@ -20,14 +28,27 @@ class BuildingSerializer(serializers.ModelSerializer):
     failure_risk = serializers.SerializerMethodField()
     verification_countdown = serializers.SerializerMethodField()
     news_articles = BuildingNewsSerializer(many=True, read_only=True)
+    advocacy_logs = serializers.SerializerMethodField()
 
     class Meta:
         model = Building
         fields = [
             'bin', 'address', 'borough', 'latitude', 'longitude', 
             'created_at', 'verified_status', 'loss_of_service_30d', 
-            'failure_risk', 'verification_countdown', 'news_articles'
+            'failure_risk', 'verification_countdown', 'news_articles',
+            'advocacy_logs'
         ]
+
+    def get_advocacy_logs(self, obj: Building) -> list:
+        """
+        Returns ONLY the logs for the current requesting user, 
+        maintaining privacy for Martha and her niece.
+        """
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return []
+        logs = obj.advocacy_logs.filter(user=request.user)
+        return AdvocacyLogSerializer(logs, many=True).data
 
     def get_verified_status(self, obj: Building) -> str:
         from .logic import ConsensusManager
