@@ -14,18 +14,28 @@ class MockGeoclientService:
         ("200", "Eastern Pkwy", "Brooklyn"): "3028212", # Brooklyn Museum
     }
 
-    def get_bin(self, house_number: str, street: str, borough: str) -> Optional[str]:
+    def get_bin_with_coordinates(self, house_number: str, street: str, borough: str) -> Dict[str, Any]:
         """
-        Returns a mock BIN for common addresses, or a deterministic dummy BIN.
+        Returns a mock BIN and coordinates for common addresses.
         """
-        # Normalized lookup
         key = (house_number.strip(), street.strip().title(), borough.strip().title())
         
+        # Default mock coordinates for NYC (Manhattan City Hall area)
+        lat = 40.7128 + (hash(key) % 1000) * 0.0001
+        lon = -74.0060 + (hash(key) % 1000) * 0.0001
+
         if key in self.MOCK_DATA:
-            return self.MOCK_DATA[key]
+            return {
+                "bin": self.MOCK_DATA[key],
+                "latitude": lat,
+                "longitude": lon
+            }
         
-        # Deterministic fallback for any NYC-like address
-        return f"9{hash(key) % 1000000:06d}"
+        return {
+            "bin": f"9{hash(key) % 1000000:06d}",
+            "latitude": lat,
+            "longitude": lon
+        }
 
     def get_address_details(self, bin: str) -> Dict[str, Any]:
         """

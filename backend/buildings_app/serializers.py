@@ -26,5 +26,4 @@ class ReportStatusSerializer(serializers.Serializer):
     house_number = serializers.CharField(max_length=10)
     street = serializers.CharField(max_length=100)
     borough = serializers.CharField(max_length=20)
-    user_id = serializers.CharField(max_length=255)
     status = serializers.ChoiceField(choices=ElevatorReport.STATUS_CHOICES)

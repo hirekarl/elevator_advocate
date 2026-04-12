@@ -1,32 +1,51 @@
 import { useState, useOptimistic, useTransition } from 'react';
-import { Container, Navbar, Nav, Button, Row, Col, Alert, Form, InputGroup } from 'react-bootstrap';
+import { Container, Navbar, Nav, Button, Row, Col, Alert, Form, Badge } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import { ReportForm } from './components/ReportForm';
 import { BuildingDetail } from './components/BuildingDetail';
+import { BuildingsMap } from './components/BuildingsMap';
+import { SignupForm } from './components/AuthForms';
+import { ConfirmEmail } from './components/ConfirmEmail';
 
-function App() {
+function MainDashboard() {
   const { t, i18n } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [reports, setReports] = useState<any[]>([]);
-  const [searchBin, setSearchBin] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [searchData, setSearchData] = useState({
+    house_number: '',
+    street: '',
+    borough: 'Manhattan'
+  });
   const [activeBuilding, setActiveBuilding] = useState<any>(null);
 
-  // Fetch full building details
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchBin) return;
+  const handleSearch = async (e?: React.FormEvent, bin?: string) => {
+    if (e) e.preventDefault();
     
-    try {
-      const response = await fetch(`/api/buildings/${searchBin}/`);
-      if (response.ok) {
-        const data = await response.json();
-        setActiveBuilding(data);
-      } else {
-        alert("Building not found in database. Please report an outage first to register it.");
+    startTransition(async () => {
+      try {
+        let response;
+        if (bin) {
+          response = await fetch(`/api/buildings/${bin}/`);
+        } else {
+          const { house_number, street, borough } = searchData;
+          if (!house_number || !street) return;
+          const query = new URLSearchParams({ house_number, street, borough }).toString();
+          response = await fetch(`/api/buildings/lookup/?${query}`);
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          setActiveBuilding(data);
+        } else {
+          alert("Building not found. Double-check your search.");
+        }
+      } catch (error) {
+        console.error("Search Error:", error);
       }
-    } catch (error) {
-      console.error("Search Error:", error);
-    }
+    });
   };
 
   const [optimisticReports, addOptimisticReport] = useOptimistic(
@@ -53,11 +72,12 @@ function App() {
         if (response.ok) {
           const data = await response.json();
           setReports(prev => [{ ...data, id: data.reported_at }, ...prev]);
-          // Refresh active building if it matches
           if (activeBuilding && activeBuilding.bin === data.building) {
-             const refreshRes = await fetch(`/api/buildings/${activeBuilding.bin}/`);
-             if (refreshRes.ok) setActiveBuilding(await refreshRes.json());
+             handleSearch(undefined, activeBuilding.bin);
           }
+        } else if (response.status === 403) {
+          alert(t('login_required'));
+          setIsLoggedIn(false);
         }
       } catch (error) {
         console.error("API Error:", error);
@@ -67,13 +87,16 @@ function App() {
 
   return (
     <Container fluid className="p-0">
-      <Navbar bg="dark" variant="dark" expand="lg">
+      <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm">
         <Container>
-          <Navbar.Brand href="#">Elevator Advocacy</Navbar.Brand>
-          <Nav className="ms-auto">
-            <Button variant="outline-light" onClick={toggleLanguage} aria-label="Toggle Language">
+          <Navbar.Brand href="/" className="fw-bold text-uppercase">Elevator Advocacy</Navbar.Brand>
+          <Nav className="ms-auto align-items-center">
+            <Button variant="outline-light" size="sm" onClick={toggleLanguage} aria-label="Toggle Language" className="me-3">
               {i18n.language === 'en' ? 'ES' : 'EN'}
             </Button>
+            {!isLoggedIn && (
+              <Badge bg="warning" text="dark" className="p-2">{t('login_required')}</Badge>
+            )}
           </Nav>
         </Container>
       </Navbar>
@@ -81,21 +104,63 @@ function App() {
       <Container className="mt-4">
         <Row>
           <Col lg={6} className="mb-4">
-            <ReportForm onReport={handleReport} isPending={isPending} />
+            {isLoggedIn ? (
+              <ReportForm onReport={handleReport} isPending={isPending} />
+            ) : (
+              <SignupForm onSuccess={() => setIsLoggedIn(true)} />
+            )}
             
-            <Form onSubmit={handleSearch} className="mb-4">
-              <h5 className="mb-3">{t('search_bin')}</h5>
-              <InputGroup>
-                <Form.Control
-                  placeholder="BIN (e.g., 1001145)"
-                  value={searchBin}
-                  onChange={(e) => setSearchBin(e.target.value)}
-                  aria-label={t('search_bin')}
-                />
-                <Button variant="primary" type="submit">
-                  {t('submit')}
-                </Button>
-              </InputGroup>
+            <Form onSubmit={handleSearch} className="mb-5 p-4 border rounded bg-white shadow-sm">
+              <h5 className="mb-4 text-primary">{t('search_address')}</h5>
+              <Row>
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-bold">{t('house_number')}</Form.Label>
+                    <Form.Control
+                      type="text"
+                      required
+                      placeholder="e.g., 280"
+                      value={searchData.house_number}
+                      onChange={(e) => setSearchData({ ...searchData, house_number: e.target.value })}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={5}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-bold">{t('street')}</Form.Label>
+                    <Form.Control
+                      type="text"
+                      required
+                      placeholder="e.g., Broadway"
+                      value={searchData.street}
+                      onChange={(e) => setSearchData({ ...searchData, street: e.target.value })}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-bold">{t('borough')}</Form.Label>
+                    <Form.Select
+                      value={searchData.borough}
+                      onChange={(e) => setSearchData({ ...searchData, borough: e.target.value })}
+                    >
+                      <option value="Manhattan">Manhattan</option>
+                      <option value="Bronx">Bronx</option>
+                      <option value="Brooklyn">Brooklyn</option>
+                      <option value="Queens">Queens</option>
+                      <option value="Staten Island">Staten Island</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Button 
+                variant="primary" 
+                type="submit" 
+                className="w-100 mt-2"
+                disabled={isPending}
+              >
+                {isPending ? t('syncing') : t('submit')}
+              </Button>
             </Form>
 
             <div className="mt-4">
@@ -125,18 +190,31 @@ function App() {
           </Col>
           
           <Col lg={6}>
+            <BuildingsMap onBuildingSelect={(bin) => handleSearch(undefined, bin)} />
+
             {activeBuilding ? (
               <BuildingDetail buildingData={activeBuilding} />
             ) : (
               <div className="p-5 text-center text-muted bg-light rounded shadow-sm border">
                 <h3>{t('building_details')}</h3>
-                <p>Enter a Building Identification Number (BIN) to view detailed service metrics.</p>
+                <p>Find your building on the map or search by address to view detailed service metrics.</p>
               </div>
             )}
           </Col>
         </Row>
       </Container>
     </Container>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainDashboard />} />
+        <Route path="/confirm/:uid/:token" element={<ConfirmEmail />} />
+      </Routes>
+    </Router>
   );
 }
 

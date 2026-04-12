@@ -9,10 +9,14 @@ class Building(models.Model):
     bin = models.CharField(max_length=7, unique=True, primary_key=True)
     address = models.TextField()
     borough = models.CharField(max_length=20)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(db_default=Now())
 
     def __str__(self) -> str:
         return f"{self.address} (BIN: {self.bin})"
+
+from django.contrib.auth.models import User
 
 class ElevatorReport(models.Model):
     """
@@ -20,12 +24,15 @@ class ElevatorReport(models.Model):
     Implements the 2-hour consensus logic.
     """
     STATUS_CHOICES: Final = [
-        ('UP', 'Up'),
-        ('DOWN', 'Down'),
+        ('UP', 'Back in Service'),
+        ('DOWN', 'Out of Service / Inoperative'),
+        ('TRAPPED', 'Entrapment (People inside)'),
+        ('SLOW', 'Slow or Intermittent Operation'),
+        ('UNSAFE', 'Unsafe (Doors, leveling, or noise)'),
     ]
 
     building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='reports')
-    user_id = models.CharField(max_length=255)  # External user identifier
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='elevator_reports')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     reported_at = models.DateTimeField(db_default=Now())
     

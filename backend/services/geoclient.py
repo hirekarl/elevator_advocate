@@ -14,15 +14,14 @@ class GeoclientService:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("NYC_API_KEY")
 
-    def get_bin(self, house_number: str, street: str, borough: str) -> Optional[str]:
+    def get_bin_with_coordinates(self, house_number: str, street: str, borough: str) -> Dict[str, Any]:
         """
-        Geocodes a street address and returns the Building Identification Number (BIN).
+        Geocodes a street address and returns the BIN and latitude/longitude.
         """
         params = {
             "houseNumber": house_number,
             "street": street,
             "borough": borough,
-            "subscription-key": self.api_key  # Fallback for some NYC API versions
         }
         headers = {
             "Ocp-Apim-Subscription-Key": self.api_key
@@ -31,14 +30,16 @@ class GeoclientService:
         try:
             response = requests.get(self.BASE_URL, params=params, headers=headers, timeout=10)
             response.raise_for_status()
-            data = response.json()
+            data = response.json().get('address', {})
             
-            # The Geoclient response structure for v2/address.json
-            return data.get('address', {}).get('buildingIdentificationNumber')
+            return {
+                "bin": data.get('buildingIdentificationNumber'),
+                "latitude": data.get('latitude'),
+                "longitude": data.get('longitude')
+            }
         except (requests.RequestException, KeyError) as e:
-            # TODO: Integrate with Blythe's logging system
             print(f"Geoclient Error: {e}")
-            return None
+            return {}
 
     def get_address_details(self, bin: str) -> Dict[str, Any]:
         """

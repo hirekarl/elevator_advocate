@@ -25,8 +25,11 @@ class ConsensusManager:
     def get_or_create_building(self, house_number: str, street: str, borough: str) -> Optional[Building]:
         """
         Retrieves a building by BIN, creating it via Geoclient if it doesn't exist.
+        Stores spatial coordinates for mapping.
         """
-        bin_id = self.geoclient.get_bin(house_number, street, borough)
+        geo_data = self.geoclient.get_bin_with_coordinates(house_number, street, borough)
+        bin_id = geo_data.get('bin')
+        
         if not bin_id:
             return None
 
@@ -34,18 +37,20 @@ class ConsensusManager:
             bin=bin_id,
             defaults={
                 'address': f"{house_number} {street}",
-                'borough': borough
+                'borough': borough,
+                'latitude': geo_data.get('latitude'),
+                'longitude': geo_data.get('longitude')
             }
         )
         return building
 
-    def report_status(self, building: Building, user_id: str, status: str) -> ElevatorReport:
+    def report_status(self, building: Building, user: User, status: str) -> ElevatorReport:
         """
         Logs a new user report and triggers the consensus check.
         """
         return ElevatorReport.objects.create(
             building=building,
-            user_id=user_id,
+            user=user,
             status=status
         )
 
@@ -53,16 +58,18 @@ class ConsensusManager:
         """
         Determines the current consensus status for a building's elevators.
         Status is 'Verified' if 2+ independent users report the same status within 2 hours.
+        Prioritizes the most recent verified status if multiple exist.
         """
         window_start = timezone.now() - timedelta(minutes=self.CONSENSUS_WINDOW_MINUTES)
         
-        # Aggregate reports within the window
+        # Aggregate reports within the window, ordered by most recent first
         reports = ElevatorReport.objects.filter(
             building=building,
             reported_at__gte=window_start
         ).values('status').annotate(
-            unique_users=Count('user_id', distinct=True)
-        )
+            unique_users=Count('user_id', distinct=True),
+            last_reported=Count('reported_at')
+        ).order_by('-last_reported')
 
         for report in reports:
             if report['unique_users'] >= 2:

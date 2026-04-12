@@ -17,19 +17,28 @@ export function ReportForm({ onReport, isPending }: ReportFormProps) {
     status: 'DOWN'
   });
 
+  const statuses = [
+    { value: 'UP', label: 'status_up', variant: 'success' },
+    { value: 'DOWN', label: 'status_down', variant: 'danger' },
+    { value: 'TRAPPED', label: 'status_trapped', variant: 'dark' },
+    { value: 'SLOW', label: 'status_slow', variant: 'warning' },
+    { value: 'UNSAFE', label: 'status_unsafe', variant: 'warning' },
+  ];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onReport(formData);
   };
 
   return (
-    <Card className="mb-4">
-      <Card.Body>
+    <Card className="mb-4 shadow-sm border-0">
+      <Card.Body className="p-4">
         <Form onSubmit={handleSubmit}>
+          <h4 className="mb-4 text-primary fw-bold">{t('report_outage')}</h4>
           <Row>
             <Col md={3}>
-              <Form.Group className="mb-3">
-                <Form.Label>{t('house_number')}</Form.Label>
+              <Form.Group className="mb-4">
+                <Form.Label className="small fw-bold">{t('house_number')}</Form.Label>
                 <Form.Control
                   type="text"
                   required
@@ -38,9 +47,9 @@ export function ReportForm({ onReport, isPending }: ReportFormProps) {
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>{t('street')}</Form.Label>
+            <Col md={5}>
+              <Form.Group className="mb-4">
+                <Form.Label className="small fw-bold">{t('street')}</Form.Label>
                 <Form.Control
                   type="text"
                   required
@@ -49,9 +58,9 @@ export function ReportForm({ onReport, isPending }: ReportFormProps) {
                 />
               </Form.Group>
             </Col>
-            <Col md={3}>
-              <Form.Group className="mb-3">
-                <Form.Label>{t('borough')}</Form.Label>
+            <Col md={4}>
+              <Form.Group className="mb-4">
+                <Form.Label className="small fw-bold">{t('borough')}</Form.Label>
                 <Form.Select
                   value={formData.borough}
                   onChange={(e) => setFormData({ ...formData, borough: e.target.value })}
@@ -65,14 +74,30 @@ export function ReportForm({ onReport, isPending }: ReportFormProps) {
               </Form.Group>
             </Col>
           </Row>
+
+          <h6 className="mb-3 fw-bold">{t('status')}</h6>
+          <div className="d-flex flex-wrap gap-2 mb-4">
+            {statuses.map((s) => (
+              <Button
+                key={s.value}
+                variant={formData.status === s.value ? s.variant : `outline-${s.variant}`}
+                className="flex-grow-1"
+                onClick={() => setFormData({ ...formData, status: s.value })}
+                aria-pressed={formData.status === s.value}
+              >
+                {t(s.label)}
+              </Button>
+            ))}
+          </div>
+
           <Button 
-            variant="danger" 
+            variant="primary" 
             type="submit" 
             disabled={isPending} 
-            className="w-100"
+            className="w-100 py-3 fw-bold text-uppercase"
             aria-live="polite"
           >
-            {isPending ? t('syncing') : t('report_outage')}
+            {isPending ? t('syncing') : t('submit')}
           </Button>
         </Form>
       </Card.Body>

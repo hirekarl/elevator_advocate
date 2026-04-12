@@ -13,13 +13,14 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
 
   return (
     <Card className="mt-4 shadow-sm">
-      <Card.Header as="h2" className="bg-primary text-white">
-        {t('building_details')}: {buildingData.bin}
+      <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+        <h2 className="mb-0">{buildingData.address}</h2>
+        <Badge bg="light" text="dark">BIN: {buildingData.bin}</Badge>
       </Card.Header>
       <Card.Body>
         <div className="mb-4">
-          <h5 className="text-muted">{t('address')}</h5>
-          <p className="lead">{buildingData.address}, {buildingData.borough}</p>
+          <h5 className="text-muted">{t('borough')}</h5>
+          <p className="lead">{buildingData.borough}</p>
         </div>
 
         <div className="mb-4">

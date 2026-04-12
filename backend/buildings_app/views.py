@@ -5,6 +5,68 @@ from .models import Building, ElevatorReport
 from .serializers import BuildingSerializer, ElevatorReportSerializer, ReportStatusSerializer
 from .logic import ConsensusManager
 
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+
+class AuthViewSet(viewsets.ViewSet):
+    """
+    API endpoint for user registration and email confirmation.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=['post'])
+    def signup(self, request):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not all([username, email, password]):
+            return Response({"error": "Missing required fields."}, status=400)
+
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "Username already exists."}, status=400)
+
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.is_active = False  # Deactivate until email is confirmed
+        user.save()
+
+        # Generate confirmation link
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        confirm_url = f"http://localhost:5173/confirm/{uid}/{token}/"
+
+        # Send email (console in dev)
+        send_mail(
+            "Confirm Your Account",
+            f"Welcome to Elevator Advocacy! Click here to confirm your email: {confirm_url}",
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+
+        return Response({"message": "Signup successful. Check your terminal (local dev) or email for confirmation link."}, status=201)
+
+    @action(detail=False, methods=['post'])
+    def confirm_email(self, request):
+        uidb64 = request.data.get('uid')
+        token = request.data.get('token')
+
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return Response({"message": "Email confirmed! You can now log in."}, status=200)
+        
+        return Response({"error": "Invalid or expired confirmation link."}, status=400)
+
 class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for viewing buildings and their verified status.
@@ -45,12 +107,32 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
             'verified_status': verified_status
         })
 
+    @action(detail=False, methods=['get'])
+    def map(self, request):
+        """
+        Returns a list of buildings with coordinates and verified status for map display.
+        """
+        buildings = Building.objects.exclude(latitude__isnull=True)
+        manager = ConsensusManager()
+        
+        results = []
+        for building in buildings:
+            results.append({
+                'bin': building.bin,
+                'address': building.address,
+                'latitude': building.latitude,
+                'longitude': building.longitude,
+                'verified_status': manager.get_verified_status(building),
+                'loss_of_service_30d': manager.get_loss_of_service_percentage(building)
+            })
+            
+        return Response(results)
+
 class ReportViewSet(viewsets.ViewSet):
     """
     API endpoint for reporting elevator status via address.
     """
-    permission_classes = [permissions.AllowAny]
-    authentication_classes = []  # Bypass CSRF for prototype development
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def create(self, request):
         serializer = ReportStatusSerializer(data=request.data)
@@ -70,7 +152,7 @@ class ReportViewSet(viewsets.ViewSet):
 
             report = manager.report_status(
                 building=building,
-                user_id=serializer.validated_data['user_id'],
+                user=request.user,
                 status=serializer.validated_data['status']
             )
 
