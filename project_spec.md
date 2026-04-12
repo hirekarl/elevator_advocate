@@ -17,7 +17,7 @@
 - **Multi-Agent Analysis**: A Supervisor-Worker system.
     - **SODAResearcher**: Aggregates history from SODA API.
     - **CommunityReporter**: Aggregates local tenant logs.
-    - **AdvocacyStrategist**: Maps data against NYC housing law to suggest specific legal/organizing next steps.
+    - **AdvocacyStrategist (Implemented)**: Maps data against NYC housing law to suggest specific legal/organizing next steps and generates 311 scripts.
 - **ROI/Metrics**: AI must calculate a "Loss of Service" metric (e.g., % of time down over 30 days).
 
 ## 4. API & Integration Needs
