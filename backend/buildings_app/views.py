@@ -151,6 +151,40 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
     @action(detail=False, methods=['get'])
+    def lookup(self, request):
+        """
+        Retrieves a building by address (house_number, street, borough).
+        Creates the building in the DB via Geoclient if it doesn't exist.
+        """
+        house_number = request.query_params.get('house_number')
+        street = request.query_params.get('street')
+        borough = request.query_params.get('borough')
+
+        if not all([house_number, street, borough]):
+            return Response(
+                {"error": "Please provide house_number, street, and borough."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        manager = ConsensusManager()
+        building = manager.get_or_create_building(house_number, street, borough)
+
+        if not building:
+            return Response(
+                {"error": "Building not found in NYC Geoclient."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = self.get_serializer(building)
+        data = serializer.data
+        
+        # Include recent reports (same as retrieve)
+        recent_reports = building.reports.order_by('-reported_at')[:10]
+        data['recent_reports'] = ElevatorReportSerializer(recent_reports, many=True).data
+        
+        return Response(data)
+
+    @action(detail=False, methods=['get'])
     def map(self, request):
         """
         Returns a list of buildings with coordinates and verified status for map display.
