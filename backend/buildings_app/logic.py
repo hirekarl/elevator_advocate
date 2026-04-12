@@ -70,14 +70,35 @@ class ConsensusManager:
 
         return "UNVERIFIED"
 
+    def get_loss_of_service_percentage(self, building: Building, days: int = 30) -> float:
+        """
+        Calculates the Loss of Service % = (Total Down Time / Total Period Time) * 100.
+        Uses a rolling window of N days.
+        """
+        now = timezone.now()
+        start_date = now - timedelta(days=days)
+        total_period_seconds = days * 24 * 60 * 60
+
+        down_reports = ElevatorReport.objects.filter(
+            building=building,
+            status='DOWN',
+            reported_at__gte=start_date
+        )
+
+        if not down_reports.exists():
+            return 0.0
+
+        unique_outages = down_reports.values('reported_at').distinct().count()
+        total_down_seconds = unique_outages * (self.CONSENSUS_WINDOW_MINUTES * 60)
+        
+        percentage = (total_down_seconds / total_period_seconds) * 100
+        return round(min(percentage, 100.0), 2)
+
     def sync_soda_reports(self, building: Building, soda_reports: List[Dict[str, Any]]):
         """
         Synchronizes official SODA reports into our local database.
-        Official reports act as a single source of truth but still follow consensus logic
-        when mixed with user reports.
         """
         for report in soda_reports:
-            # SODA descriptor 81 = DOWN, 63 = DOWN (Failed Test)
             status = 'DOWN'
             unique_key = report.get('unique_key')
             

@@ -14,6 +14,24 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'bin'
     permission_classes = [permissions.AllowAny]
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Extends the default retrieve to include metrics.
+        """
+        instance = self.get_object()
+        manager = ConsensusManager()
+        
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        data['verified_status'] = manager.get_verified_status(instance)
+        data['loss_of_service_30d'] = manager.get_loss_of_service_percentage(instance, days=30)
+        
+        # Include recent reports
+        recent_reports = instance.reports.order_by('-reported_at')[:10]
+        data['recent_reports'] = ElevatorReportSerializer(recent_reports, many=True).data
+        
+        return Response(data)
+
     @action(detail=True, methods=['get'])
     def status(self, request, bin=None):
         """
