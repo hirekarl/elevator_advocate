@@ -269,6 +269,7 @@ function MainDashboard() {
                 <BuildingDetail
                   buildingData={activeBuilding}
                   isLoggedIn={isLoggedIn}
+                  onShowAuth={() => setShowAuthModal(true)}
                   onReportOptimistic={(report: any) => addOptimisticReport(report)}
                   refreshBuilding={() => fetchBuilding(activeBuilding.bin)}
                 />

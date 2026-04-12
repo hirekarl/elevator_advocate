@@ -370,8 +370,25 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
 
       {/* ZONE 3: Advocacy */}
       <h4 className="fw-bold mb-3 mt-5 d-flex align-items-center">
-        <span className="me-2">📢</span> {t('advocacy_center')}
+        <span className="me-2" aria-hidden="true">📢</span> {t('advocacy_center')}
       </h4>
+
+      {/* Call 311 Now */}
+      <a
+        href="tel:311"
+        className="d-flex align-items-center justify-content-between p-3 mb-3 bg-danger text-white rounded-4 text-decoration-none fw-bold shadow-sm"
+        aria-label={`${t('call_311_now')} — ${t('call_311_number')}`}
+      >
+        <div>
+          <div className="fs-6"><span aria-hidden="true">📞</span> {t('call_311_now')}</div>
+          <small className="fw-normal opacity-75">{t('call_311_desc')}</small>
+        </div>
+        <div className="text-end">
+          <div className="fw-bold">{t('call_311_number')}</div>
+          <small className="fw-normal opacity-75">or dial 311</small>
+        </div>
+      </a>
+
       <Card className="border-0 shadow-sm bg-primary text-white mb-4 overflow-hidden rounded-4">
         <Card.Body className="p-4">
           {isLoadingScript ? (
@@ -380,9 +397,9 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
             <>
               <h6 className="fw-bold text-info mb-3">{advocacyScript.headline}</h6>
               <div className="p-3 bg-white text-dark rounded-3 border-start border-info border-5 mb-3">
-                <pre className="mb-0 text-wrap font-monospace small" style={{ whiteSpace: 'pre-wrap' }}>
+                <div className="mb-0 small" style={{ whiteSpace: 'pre-wrap' }}>
                   {advocacyScript.script}
-                </pre>
+                </div>
               </div>
               <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
                 <small className="text-white-50">Legal: {advocacyScript.legal_reference}</small>
@@ -413,9 +430,9 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
               <p className="text-secondary mb-0 small">{t('help_advocate_desc')}</p>
             </Col>
             <Col md={4} className="text-md-end mt-3 mt-md-0">
-              <Button 
-                variant="outline-primary" 
-                className="fw-bold rounded-pill px-4 w-100 w-md-auto"
+              <Button
+                variant="outline-primary"
+                className="fw-bold rounded-pill px-4 w-100 w-md-auto mb-2"
                 onClick={() => {
                   const summary = `Elevator Advocacy Report: ${buildingData.address}\n` +
                     `- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n` +
@@ -427,27 +444,26 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
               >
                 Copy Summary
               </Button>
+              <div className="d-flex flex-wrap gap-2 justify-content-md-end">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Elevator Advocacy Report: ${buildingData.address}\n- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n- Current Status: ${buildingData.verified_status}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="badge bg-dark px-3 py-2 fw-medium rounded-pill text-decoration-none"
+                  aria-label="Share building status via WhatsApp"
+                >
+                  Share via WhatsApp
+                </a>
+                <a
+                  href={`mailto:?subject=${encodeURIComponent(`Elevator Issue: ${buildingData.address}`)}&body=${encodeURIComponent(`Elevator Advocacy Report: ${buildingData.address}\n- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n- Current Status: ${buildingData.verified_status}`)}`}
+                  className="badge bg-dark px-3 py-2 fw-medium rounded-pill text-decoration-none"
+                  aria-label="Email building status to a representative"
+                >
+                  Email Representative
+                </a>
+              </div>
             </Col>
           </Row>
-          <hr className="my-4 opacity-10" />
-          <div className="d-flex flex-wrap gap-2">
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(`Elevator Advocacy Report: ${buildingData.address}\n- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n- Current Status: ${buildingData.verified_status}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="badge bg-dark px-3 py-2 fw-medium rounded-pill text-decoration-none"
-              aria-label="Share building status via WhatsApp"
-            >
-              Share via WhatsApp
-            </a>
-            <a
-              href={`mailto:?subject=${encodeURIComponent(`Elevator Issue: ${buildingData.address}`)}&body=${encodeURIComponent(`Elevator Advocacy Report: ${buildingData.address}\n- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n- Current Status: ${buildingData.verified_status}`)}`}
-              className="badge bg-dark px-3 py-2 fw-medium rounded-pill text-decoration-none"
-              aria-label="Email building status to a representative"
-            >
-              Email Representative
-            </a>
-          </div>
         </Card.Body>
       </Card>
 
