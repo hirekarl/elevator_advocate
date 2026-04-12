@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta
 from unittest.mock import MagicMock
+from django.contrib.auth.models import User
 from .models import Building, ElevatorReport
 from .logic import ConsensusManager
 from services.geoclient import GeoclientService
@@ -21,12 +22,17 @@ class ConsensusManagerTests(TestCase):
             address="123 Broadway",
             borough="Manhattan"
         )
+        
+        # Create test users
+        self.user1 = User.objects.create_user(username="user1")
+        self.user2 = User.objects.create_user(username="user2")
+        self.user3 = User.objects.create_user(username="user3")
 
     def test_single_report_is_unverified(self):
         """
         A single report should result in UNVERIFIED status.
         """
-        self.manager.report_status(self.building, "user1", "DOWN")
+        self.manager.report_status(self.building, self.user1, "DOWN")
         status = self.manager.get_verified_status(self.building)
         self.assertEqual(status, "UNVERIFIED")
 
@@ -34,8 +40,8 @@ class ConsensusManagerTests(TestCase):
         """
         Two reports from the same user should result in UNVERIFIED status.
         """
-        self.manager.report_status(self.building, "user1", "DOWN")
-        self.manager.report_status(self.building, "user1", "DOWN")
+        self.manager.report_status(self.building, self.user1, "DOWN")
+        self.manager.report_status(self.building, self.user1, "DOWN")
         status = self.manager.get_verified_status(self.building)
         self.assertEqual(status, "UNVERIFIED")
 
@@ -43,8 +49,8 @@ class ConsensusManagerTests(TestCase):
         """
         Two reports from different users within 2 hours should result in VERIFIED status.
         """
-        self.manager.report_status(self.building, "user1", "DOWN")
-        self.manager.report_status(self.building, "user2", "DOWN")
+        self.manager.report_status(self.building, self.user1, "DOWN")
+        self.manager.report_status(self.building, self.user2, "DOWN")
         status = self.manager.get_verified_status(self.building)
         self.assertEqual(status, "DOWN")
 
@@ -56,13 +62,13 @@ class ConsensusManagerTests(TestCase):
         old_time = timezone.now() - timedelta(minutes=130)
         ElevatorReport.objects.create(
             building=self.building,
-            user_id="user1",
+            user=self.user1,
             status="DOWN",
             reported_at=old_time
         )
         
         # Create a new report
-        self.manager.report_status(self.building, "user2", "DOWN")
+        self.manager.report_status(self.building, self.user2, "DOWN")
         
         status = self.manager.get_verified_status(self.building)
         self.assertEqual(status, "UNVERIFIED")
@@ -72,9 +78,9 @@ class ConsensusManagerTests(TestCase):
         If user1 reports UP and user2 reports DOWN, it remains UNVERIFIED.
         If user3 then reports DOWN, it becomes DOWN.
         """
-        self.manager.report_status(self.building, "user1", "UP")
-        self.manager.report_status(self.building, "user2", "DOWN")
+        self.manager.report_status(self.building, self.user1, "UP")
+        self.manager.report_status(self.building, self.user2, "DOWN")
         self.assertEqual(self.manager.get_verified_status(self.building), "UNVERIFIED")
         
-        self.manager.report_status(self.building, "user3", "DOWN")
+        self.manager.report_status(self.building, self.user3, "DOWN")
         self.assertEqual(self.manager.get_verified_status(self.building), "DOWN")

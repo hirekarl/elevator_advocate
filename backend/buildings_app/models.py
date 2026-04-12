@@ -47,3 +47,26 @@ class ElevatorReport(models.Model):
 
     def __str__(self) -> str:
         return f"{self.status} at {self.building.bin} by {self.user_id}"
+
+class BuildingNews(models.Model):
+    """
+    Tracks local news reports and media mentions regarding elevator outages
+    and safety issues for a specific building.
+    """
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='news_articles')
+    title = models.CharField(max_length=500)
+    url = models.URLField(max_length=1000, unique=True)
+    source = models.CharField(max_length=200)
+    published_date = models.DateField(null=True, blank=True)
+    summary = models.TextField()
+    relevance_score = models.FloatField(default=0.0) # 0-1 scale
+    created_at = models.DateTimeField(db_default=Now())
+
+    class Meta:
+        verbose_name_plural = "Building News"
+        indexes = [
+            models.Index(fields=['building', 'relevance_score']),
+        ]
+
+    def __str__(self) -> str:
+        return f"News: {self.title} ({self.source})"

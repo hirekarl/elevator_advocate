@@ -22,8 +22,11 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
               <h2 className="fw-bold mb-1 text-primary">{buildingData.address}</h2>
               <p className="text-muted mb-0">{buildingData.borough} • BIN {buildingData.bin}</p>
             </div>
-            <Badge bg={buildingData.verified_status === 'DOWN' ? 'danger' : 'success'} className="px-3 py-2 fs-6">
-              Status: {buildingData.verified_status}
+            <Badge 
+              bg={buildingData.verified_status === 'DOWN' ? 'danger' : (buildingData.verified_status === 'UNVERIFIED' ? 'warning' : 'success')} 
+              className={`px-3 py-2 fs-6 ${buildingData.verified_status === 'UNVERIFIED' ? 'animate-pulse text-dark' : ''}`}
+            >
+              {buildingData.verified_status === 'UNVERIFIED' ? 'Status: Unverified / Testing' : `Status: ${buildingData.verified_status}`}
             </Badge>
           </div>
 
@@ -116,6 +119,38 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
             </Card.Body>
           </Card>
         </Col>
+      </Row>
+
+      <h4 className="fw-bold mb-4 mt-5">Public Media & Local News</h4>
+      <p className="text-muted mb-4">Contextual news reports regarding this building's record of service and safety.</p>
+      
+      <Row className="g-4">
+        {buildingData.news_articles && buildingData.news_articles.length > 0 ? (
+          buildingData.news_articles.map((article: any, idx: number) => (
+            <Col md={6} key={idx}>
+              <Card className="h-100 border-0 shadow-sm">
+                <Card.Body className="p-4">
+                  <div className="d-flex justify-content-between mb-2">
+                    <small className="text-primary fw-bold text-uppercase">{article.source}</small>
+                    <small className="text-muted">{article.published_date}</small>
+                  </div>
+                  <h5 className="fw-bold mb-3">{article.title}</h5>
+                  <p className="text-muted small mb-4">{article.summary}</p>
+                  <a href={article.url} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    Read Article
+                  </a>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))
+        ) : (
+          <Col xs={12}>
+            <Alert variant="light" className="border-dashed py-5 text-center">
+              <p className="mb-0 text-muted">No media mentions found for this building yet.</p>
+              <small className="text-muted italic">(News synchronization is performed automatically for active buildings.)</small>
+            </Alert>
+          </Col>
+        )}
       </Row>
     </div>
   );
