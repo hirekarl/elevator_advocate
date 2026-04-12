@@ -4,12 +4,16 @@ import { useTranslation } from 'react-i18next';
 
 interface BuildingDetailProps {
   buildingData: any;
+  isLoggedIn?: boolean;
+  onReportOptimistic?: (report: any) => void;
+  refreshBuilding?: () => void;
 }
 
-export function BuildingDetail({ buildingData }: BuildingDetailProps) {
-  const { t } = useTranslation();
+export function BuildingDetail({ buildingData, isLoggedIn = false, onReportOptimistic, refreshBuilding }: BuildingDetailProps) {
+  const { t, i18n } = useTranslation();
   const [advocacyScript, setAdvocacyScript] = useState<any>(null);
   const [isLoadingScript, setIsLoadingScript] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
   
   // Toast State
   const [showToast, setShowToast] = useState(false);
@@ -31,12 +35,12 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
     if (buildingData?.bin) {
       fetchAdvocacyScript();
     }
-  }, [buildingData?.bin]);
+  }, [buildingData?.bin, i18n.language]);
 
   const fetchAdvocacyScript = async () => {
     setIsLoadingScript(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/advocacy_script/`);
+      const response = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/advocacy_script/?lang=${i18n.language}`);
       if (response.ok) {
         const data = await response.json();
         setAdvocacyScript(data);
@@ -56,8 +60,20 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
 
   const handleReport = async (status: string) => {
     const token = localStorage.getItem('token');
-    if (!token) return triggerToast("Please log in to report status.", "warning");
+    if (!token) return triggerToast(t('login_required'), "warning");
     
+    setIsReporting(true);
+
+    // Optimistic UI update
+    if (onReportOptimistic) {
+      onReportOptimistic({ 
+        id: Date.now(), 
+        status, 
+        time: new Date().toLocaleTimeString(),
+        pending: true 
+      });
+    }
+
     try {
       const res = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/report_status/`, {
         method: 'POST',
@@ -69,10 +85,15 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
       });
       if (res.ok) {
         triggerToast(`Status reported as ${status}!`, "success");
-        // Reload building data would happen here via parent refresh
+        if (refreshBuilding) refreshBuilding();
+      } else {
+        const errorData = await res.json();
+        triggerToast(errorData.error || "Error sending report.", "danger");
       }
     } catch (e) {
       triggerToast("Error sending report.", "danger");
+    } finally {
+      setIsReporting(false);
     }
   };
 
@@ -94,7 +115,7 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
         triggerToast("Complaint logged to your paper trail!", "success");
         setShowAdvocacyModal(false);
         setAdvocacyFormData({ sr_number: '', description: '' });
-        // Ideally trigger parent refresh here
+        if (refreshBuilding) refreshBuilding();
       } else {
         const data = await res.json();
         triggerToast(data.error || "Failed to log complaint.", "danger");
@@ -106,15 +127,23 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
     }
   };
 
+  const getStatusVariant = (status: string) => {
+    switch(status) {
+      case 'DOWN': return 'danger';
+      case 'UNVERIFIED': return 'warning';
+      default: return 'success';
+    }
+  };
+
   return (
-    <div className="building-action-center">
-      {/* 311 Log Modal */}
+    <div className="building-action-center pb-safe">
+      {/* Modals & Toasts */}
       <Modal show={showAdvocacyModal} onHide={() => setShowAdvocacyModal(false)} centered>
         <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold">Log 311 Complaint</Modal.Title>
+          <Modal.Title className="fw-bold">{t('log_311_title')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-3">
-          <p className="text-secondary small mb-4">Martha, if you called 311, enter the number they gave you here. This helps you track the city's response.</p>
+          <p className="text-secondary small mb-4">{t('log_311_help')}</p>
           <Form onSubmit={handleLogAdvocacy}>
             <Form.Group className="mb-3">
               <Form.Label className="fw-bold small">Service Request (SR) Number</Form.Label>
@@ -143,75 +172,37 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
         </Modal.Body>
       </Modal>
 
-      {/* Feedback Toast */}
       <ToastContainer position="top-end" className="p-3" style={{ zIndex: 9999 }}>
-        <Toast 
-          onClose={() => setShowToast(false)} 
-          show={showToast} 
-          delay={3000} 
-          autohide 
-          bg={toastVariant} 
+        <Toast
+          onClose={() => setShowToast(false)}
+          show={showToast}
+          delay={3000}
+          autohide
+          bg={toastVariant}
           className={toastVariant === 'light' ? 'text-dark' : 'text-white'}
         >
           <Toast.Body className="fw-medium">{toastMessage}</Toast.Body>
         </Toast>
       </ToastContainer>
 
-      {/* MARTHA-MODE: Quick Report Buttons */}
-      <Card className="border-0 shadow-sm mb-4 bg-warning-subtle border-start border-warning border-4">
+      {/* ZONE 1: Identity & Live Status */}
+      <Card className="border-0 shadow mb-4 overflow-hidden">
+        <div className={`bg-${getStatusVariant(buildingData.verified_status)} py-2 px-4 text-white fw-bold small text-uppercase`}>
+          {buildingData.verified_status === 'UNVERIFIED' 
+            ? `⚠️ ${t('verification_pending')} (${buildingData.verification_countdown}m)` 
+            : `✅ Current Status: ${buildingData.verified_status}`}
+        </div>
         <Card.Body className="p-4">
-          <h5 className="fw-bold mb-3">Is the elevator working right now?</h5>
-          <div className="d-grid gap-3 d-md-flex">
-            <Button 
-              variant="success" 
-              className="px-4 py-3 fw-bold fs-5 shadow-sm"
-              onClick={() => handleReport('UP')}
-            >
-              ✅ YES, IT'S WORKING
-            </Button>
-            <Button 
-              variant="danger" 
-              className="px-4 py-3 fw-bold fs-5 shadow-sm"
-              onClick={() => handleReport('DOWN')}
-            >
-              ❌ NO, IT'S BROKEN
-            </Button>
-            <Button 
-              variant="warning" 
-              className="px-4 py-3 fw-bold fs-5 shadow-sm text-dark"
-              onClick={() => handleReport('SLOW')}
-            >
-              ⚠️ IT'S SLOW / UNSAFE
-            </Button>
-          </div>
-          <p className="mt-3 mb-0 text-secondary small">Martha, just tap the big button above to tell your neighbors what you see at the elevator.</p>
-        </Card.Body>
-      </Card>
-
-      <Card className="border-0 shadow-sm mb-4">
-        <Card.Body className="p-4">
-          <div className="d-flex justify-content-between align-items-start mb-3">
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4 gap-3">
             <div>
-              <h2 className="fw-bold mb-1 text-primary">{buildingData.address}</h2>
-              <p className="text-muted mb-0">{buildingData.borough} • BIN {buildingData.bin}</p>
+              <h2 className="fw-bold mb-1 text-primary fs-3 fs-md-2">{buildingData.address}</h2>
+              <p className="text-muted mb-0 small">{buildingData.borough} • BIN {buildingData.bin}</p>
             </div>
-            <Badge 
-              bg={buildingData.verified_status === 'DOWN' ? 'danger' : (buildingData.verified_status === 'UNVERIFIED' ? 'warning' : 'success')} 
-              className={`px-3 py-2 fs-6 ${buildingData.verified_status === 'UNVERIFIED' ? 'animate-pulse text-dark border border-dark' : ''}`}
-            >
-              {buildingData.verified_status === 'UNVERIFIED' 
-                ? `Status: Unverified (${buildingData.verification_countdown}m left)` 
-                : `Status: ${buildingData.verified_status}`}
-            </Badge>
-
-          </div>
-
-          {localStorage.getItem('token') && (
-            <div className="mb-4">
+            {isLoggedIn && (
               <Button 
                 variant="outline-primary" 
                 size="sm" 
-                className="rounded-pill px-3"
+                className="rounded-pill px-3 fw-bold"
                 onClick={async () => {
                   try {
                     const res = await fetch('http://localhost:8000/api/auth/set_primary_building/', {
@@ -226,153 +217,207 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
                     if (res.ok) {
                       localStorage.setItem('primary_building_bin', buildingData.bin);
                       triggerToast(data.message, 'success');
-                    } else {
-                      triggerToast(data.error || 'Error setting home building', 'danger');
                     }
-                  } catch (e) {
-                    console.error("Home building error:", e);
-                    triggerToast("Network error occurred", "danger");
-                  }
+                  } catch (e) { triggerToast("Error setting home building", "danger"); }
                 }}
               >
-                Set as Home Building
+                Set as Home
               </Button>
-            </div>
-          )}
-
-          <Row className="g-4 mt-2">
-            <Col md={6}>
-              <div className="p-3 bg-light rounded border">
-                <h6 className="text-uppercase fw-bold text-muted small mb-3">Service Reliability</h6>
-                <div className="d-flex align-items-end mb-2">
-                  <span className="display-6 fw-bold me-2">{100 - (buildingData.loss_of_service_30d || 0)}%</span>
-                  <span className="text-muted mb-1 pb-1">Uptime (30d)</span>
-                </div>
-                <ProgressBar 
-                  now={100 - (buildingData.loss_of_service_30d || 0)} 
-                  variant={buildingData.loss_of_service_30d > 10 ? 'warning' : 'success'}
-                  style={{ height: '8px' }}
-                />
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="p-3 bg-light rounded border">
-                <h6 className="text-uppercase fw-bold text-muted small mb-3">Maintenance Forecast</h6>
-                <div className="d-flex align-items-end mb-2">
-                  <span className="display-6 fw-bold me-2">{buildingData.failure_risk?.risk_score || 0}%</span>
-                  <span className="text-muted mb-1 pb-1">Risk Level</span>
-                </div>
-                <ProgressBar 
-                  now={buildingData.failure_risk?.risk_score || 0} 
-                  variant={buildingData.failure_risk?.risk_score > 60 ? 'danger' : 'warning'}
-                  style={{ height: '8px' }}
-                />
-              </div>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
-      {/* 311 Advocacy Script Section */}
-      <h4 className="fw-bold mb-4 mt-5">Advocacy Center</h4>
-      <Card className="border-0 shadow-sm bg-primary text-white mb-5 overflow-hidden">
-        <Card.Body className="p-4 position-relative">
-          <div className="position-relative" style={{ zIndex: 1 }}>
-            <div className="d-flex align-items-center mb-3">
-              <span role="img" aria-label="Loudspeaker" className="fs-3 me-2">📢</span>
-              <h5 className="fw-bold mb-0">311 Reporting Script</h5>
-            </div>
-            {isLoadingScript ? (
-              <p className="mb-0 italic text-white-50">Generating custom advocacy strategy...</p>
-            ) : advocacyScript ? (
-              <>
-                <h6 className="fw-bold text-info mb-3">{advocacyScript.headline}</h6>
-                <div className="p-3 bg-white text-dark rounded border-start border-info border-4 mb-3">
-                  <pre className="mb-0 text-wrap font-monospace small" style={{ whiteSpace: 'pre-wrap' }}>
-                    {advocacyScript.script}
-                  </pre>
-                </div>
-                <div className="d-flex justify-content-between align-items-center">
-                  <small className="text-white-50">Legal Context: {advocacyScript.legal_reference}</small>
-                  <Button 
-                    variant="light" 
-                    size="sm" 
-                    className="rounded-pill px-3 fw-bold"
-                    onClick={() => {
-                      navigator.clipboard.writeText(advocacyScript.script);
-                      triggerToast("Script copied to clipboard!", "info");
-                    }}
-                  >
-                    Copy Script
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <p className="mb-0 text-white-50">No advocacy strategy available for this building status.</p>
             )}
           </div>
-          <div className="position-absolute bottom-0 end-0 opacity-10" style={{ fontSize: '100px', transform: 'translate(20%, 20%)' }}>
-            <span role="img" aria-label="Balance Scales Decoration">⚖️</span>
+
+          <div className="p-3 bg-light rounded-4 border border-primary border-opacity-10 mb-2">
+            <h6 className="fw-bold mb-3 text-secondary text-uppercase small">{t('quick_report_title')}</h6>
+            <Row className="g-2 align-items-stretch">
+              <Col xs={4} md={4} className="d-flex">
+                <Button
+                  variant="success"
+                  disabled={isReporting}
+                  aria-label={t('status_up')}
+                  className="w-100 py-3 fw-bold shadow-sm d-flex flex-column align-items-center justify-content-center h-100 border-0"
+                  onClick={() => handleReport('UP')}
+                >
+                  <div className="bg-white rounded-circle p-1 mb-2 shadow-sm d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                    <span className="fs-5" aria-hidden="true">✅</span>
+                  </div>
+                  <span className="small">{t('status_up').split(' / ')[0].toUpperCase()}</span>
+                </Button>
+              </Col>
+              <Col xs={4} md={4} className="d-flex">
+                <Button
+                  variant="danger"
+                  disabled={isReporting}
+                  aria-label={t('status_down')}
+                  className="w-100 py-3 fw-bold shadow-sm d-flex flex-column align-items-center justify-content-center h-100 border-0"
+                  onClick={() => handleReport('DOWN')}
+                >
+                  <div className="bg-white rounded-circle p-1 mb-2 shadow-sm d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                    <span className="fs-5" aria-hidden="true">❌</span>
+                  </div>
+                  <span className="small">{t('status_down').split(' / ')[0].toUpperCase()}</span>
+                </Button>
+              </Col>
+              <Col xs={4} md={4} className="d-flex">
+                <Button
+                  variant="warning"
+                  disabled={isReporting}
+                  aria-label={t('status_slow')}
+                  className="w-100 py-3 fw-bold shadow-sm text-dark d-flex flex-column align-items-center justify-content-center h-100 border-0"
+                  onClick={() => handleReport('SLOW')}
+                >
+                  <div className="bg-dark rounded-circle p-1 mb-2 shadow-sm d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                    <span className="fs-5" aria-hidden="true">⚠️</span>
+                  </div>
+                  <span className="small">{t('status_slow').split(' / ')[0].toUpperCase()}</span>
+                </Button>
+              </Col>
+            </Row>
+            <p className="mb-0 mt-3 text-muted small italic">
+              {t('quick_report_help')}
+            </p>
           </div>
         </Card.Body>
       </Card>
 
-      <h4 className="fw-bold mb-4 mt-5">Advocate Toolkit</h4>
-      <Card className="border-0 shadow-sm mb-5 bg-light">
+      {/* ZONE 2: Insights */}
+      <Row className="g-3 mb-4">
+        <Col xs={12} md={6}>
+          <div className="p-3 bg-white shadow-sm rounded-4 border h-100">
+            <h6 className="text-uppercase fw-bold text-muted small mb-3">{t('loss_of_service')}</h6>
+            <div className="d-flex align-items-end mb-2">
+              <span className="display-6 fw-bold me-2 fs-2">{100 - (buildingData.loss_of_service_30d || 0)}%</span>
+              <span className="text-muted mb-1 pb-1 small">Uptime (30d)</span>
+            </div>
+            <ProgressBar
+              now={100 - (buildingData.loss_of_service_30d || 0)}
+              variant={buildingData.loss_of_service_30d > 10 ? 'warning' : 'success'}
+              style={{ height: '8px' }}
+              aria-label={`${100 - (buildingData.loss_of_service_30d || 0)}% uptime over the last 30 days`}
+            />
+          </div>
+        </Col>
+        <Col xs={12} md={6}>
+          <div className="p-3 bg-white shadow-sm rounded-4 border h-100">
+            <h6 className="text-uppercase fw-bold text-muted small mb-3">Maintenance Forecast</h6>
+            <div className="d-flex align-items-end mb-2">
+              <span className="display-6 fw-bold me-2 fs-2">{buildingData.failure_risk?.risk_score || 0}%</span>
+              <span className="text-muted mb-1 pb-1 small">Risk Level</span>
+            </div>
+            <ProgressBar
+              now={buildingData.failure_risk?.risk_score || 0}
+              variant={buildingData.failure_risk?.risk_score > 60 ? 'danger' : 'warning'}
+              style={{ height: '8px' }}
+              aria-label={`${buildingData.failure_risk?.risk_score || 0}% predicted failure risk over the next 7 days`}
+            />
+          </div>
+        </Col>
+      </Row>
+
+      {/* ZONE 3: Advocacy */}
+      <h4 className="fw-bold mb-3 mt-5 d-flex align-items-center">
+        <span className="me-2">📢</span> {t('advocacy_center')}
+      </h4>
+      <Card className="border-0 shadow-sm bg-primary text-white mb-4 overflow-hidden rounded-4">
+        <Card.Body className="p-4">
+          {isLoadingScript ? (
+            <p className="mb-0 italic text-white-50">Generating custom advocacy strategy...</p>
+          ) : advocacyScript ? (
+            <>
+              <h6 className="fw-bold text-info mb-3">{advocacyScript.headline}</h6>
+              <div className="p-3 bg-white text-dark rounded-3 border-start border-info border-5 mb-3">
+                <pre className="mb-0 text-wrap font-monospace small" style={{ whiteSpace: 'pre-wrap' }}>
+                  {advocacyScript.script}
+                </pre>
+              </div>
+              <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+                <small className="text-white-50">Legal: {advocacyScript.legal_reference}</small>
+                <Button 
+                  variant="light" 
+                  size="sm" 
+                  className="rounded-pill px-4 fw-bold shadow-sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(advocacyScript.script);
+                    triggerToast("Script copied to clipboard!", "info");
+                  }}
+                >
+                  Copy Script
+                </Button>
+              </div>
+            </>
+          ) : (
+            <p className="mb-0 text-white-50">No advocacy strategy available for this building status.</p>
+          )}
+        </Card.Body>
+      </Card>
+
+      <Card className="border-0 shadow-sm mb-5 bg-white rounded-4">
         <Card.Body className="p-4">
           <Row className="align-items-center">
             <Col md={8}>
-              <h5 className="fw-bold mb-2">Help Martha Advocate</h5>
-              <p className="text-secondary mb-0">Does your niece or an advocate need to help you? This section provides hard data they can use when calling elected officials or the building manager.</p>
+              <h5 className="fw-bold mb-2">{t('help_advocate_title')}</h5>
+              <p className="text-secondary mb-0 small">{t('help_advocate_desc')}</p>
             </Col>
             <Col md={4} className="text-md-end mt-3 mt-md-0">
               <Button 
                 variant="outline-primary" 
-                className="fw-bold rounded-pill px-4"
+                className="fw-bold rounded-pill px-4 w-100 w-md-auto"
                 onClick={() => {
                   const summary = `Elevator Advocacy Report: ${buildingData.address}\n` +
                     `- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n` +
                     `- Current Status: ${buildingData.verified_status}\n` +
-                    `- Legal Code: NYC Admin Code §27-2005 (Housing Maintenance Code)\n` +
-                    `- My Active Complaints: ${advocacyLogs.length} logged in my paper trail.`;
-                  
+                    `- Active Complaints: ${advocacyLogs.length}`;
                   navigator.clipboard.writeText(summary);
-                  triggerToast("Advocacy Summary copied for sharing!", "success");
+                  triggerToast("Summary copied for sharing!", "success");
                 }}
               >
-                Copy Advocacy Summary
+                Copy Summary
               </Button>
             </Col>
           </Row>
           <hr className="my-4 opacity-10" />
           <div className="d-flex flex-wrap gap-2">
-            <Badge bg="dark" className="px-3 py-2 fw-medium">Share via WhatsApp</Badge>
-            <Badge bg="dark" className="px-3 py-2 fw-medium">Email Representative</Badge>
-            <Badge bg="dark" className="px-3 py-2 fw-medium">Download Hardship PDF (Coming Soon)</Badge>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Elevator Advocacy Report: ${buildingData.address}\n- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n- Current Status: ${buildingData.verified_status}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="badge bg-dark px-3 py-2 fw-medium rounded-pill text-decoration-none"
+              aria-label="Share building status via WhatsApp"
+            >
+              Share via WhatsApp
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(`Elevator Issue: ${buildingData.address}`)}&body=${encodeURIComponent(`Elevator Advocacy Report: ${buildingData.address}\n- 30-Day Service Loss: ${buildingData.loss_of_service_30d}%\n- Current Status: ${buildingData.verified_status}`)}`}
+              className="badge bg-dark px-3 py-2 fw-medium rounded-pill text-decoration-none"
+              aria-label="Email building status to a representative"
+            >
+              Email Representative
+            </a>
           </div>
         </Card.Body>
       </Card>
 
-      <h4 className="fw-bold mb-4">Historical Action Timeline</h4>
-      
-      <Row className="mb-5">
-        <Col md={12}>
-          <Card className="border-0 shadow-sm border-start border-primary border-4">
-            <Card.Header className="bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-              <div>
-                <h5 className="fw-bold mb-0">Advocacy Paper Trail</h5>
-                <p className="small text-secondary fw-medium">Track your 311 complaints and legal evidence here.</p>
-              </div>
-              <Button 
-                variant="primary" 
-                size="sm" 
-                className="rounded-pill px-3 fw-bold"
-                onClick={() => setShowAdvocacyModal(true)}
-              >
-                + Log 311 Complaint
-              </Button>
-            </Card.Header>
-            <Card.Body className="px-4 pb-4">
+      {/* ZONE 4: Evidence Timeline */}
+      <h4 className="fw-bold mb-3 mt-5 d-flex align-items-center">
+        <span className="me-2">📜</span> {t('paper_trail_title')}
+      </h4>
+      <Card className="border-0 shadow-sm mb-5 rounded-4 overflow-hidden">
+        <Card.Header className="bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 className="fw-bold mb-0 text-uppercase small text-muted">Evidence & History</h6>
+          </div>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            className="rounded-pill px-3 fw-bold shadow-sm"
+            onClick={() => setShowAdvocacyModal(true)}
+          >
+            + {t('log_311_title')}
+          </Button>
+        </Card.Header>
+        <Card.Body className="px-4 pb-4">
+          <Row className="g-4">
+            <Col lg={12}>
+              <h6 className="fw-bold mb-3 text-primary small text-uppercase">My Personal Trail</h6>
               {advocacyLogs.length > 0 ? (
                 <ListGroup variant="flush">
                   {advocacyLogs.map((log: any, idx: number) => (
@@ -381,7 +426,7 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
                         <div>
                           <span className="badge bg-primary-subtle text-primary mb-2 me-2">SR {log.sr_number}</span>
                           <span className={`badge ${log.outcome === 'Pending' ? 'bg-secondary' : 'bg-info'} mb-2`}>{log.outcome}</span>
-                          <p className="mb-1 fw-bold">{log.description || "311 Complaint Filed"}</p>
+                          <p className="mb-1 fw-bold small">{log.description || "311 Complaint Filed"}</p>
                           <small className="text-secondary">{new Date(log.created_at).toLocaleString()}</small>
                         </div>
                       </div>
@@ -390,136 +435,87 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
                 </ListGroup>
               ) : (
                 <Alert variant="light" className="border-dashed py-4 text-center">
-                  <p className="mb-0 text-secondary">No personal advocacy history logged yet.</p>
-                  <small className="text-muted italic">Log a 311 number to start your paper trail.</small>
+                  <small className="text-muted italic">No personal logs. Tap + to add a 311 SR#.</small>
                 </Alert>
               )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      <Row>
-        <Col md={6}>
-          <Card className="h-100 border-0 shadow-sm">
-            <Card.Header className="bg-white border-0 pt-4 px-4">
-              <h5 className="fw-bold mb-0">Tenant Community Reports</h5>
-              <p className="small text-muted">Real-time issues reported by your neighbors.</p>
-            </Card.Header>
-            <Card.Body className="px-4 pb-4">
-              <ListGroup variant="flush">
+            </Col>
+            
+            <Col md={6}>
+              <h6 className="fw-bold mb-3 text-success small text-uppercase">{t('community_reports')}</h6>
+              <ListGroup variant="flush" className="border rounded bg-light p-2">
                 {tenantReports.length > 0 ? (
-                  tenantReports.map((report: any, idx: number) => (
-                    <ListGroup.Item key={idx} className="px-0 py-3 border-light">
-                      <div className="d-flex justify-content-between">
-                        <Badge bg={report.status === 'UP' ? 'success-subtle' : 'danger-subtle'} className={`text-${report.status === 'UP' ? 'success' : 'danger'} mb-2`}>
-                          {report.status}
-                        </Badge>
-                        <small className="text-muted">{new Date(report.reported_at).toLocaleDateString()}</small>
-                      </div>
-                      <p className="mb-0 small fw-medium">User reported elevator as {report.status.toLowerCase()}.</p>
+                  tenantReports.slice(0, 5).map((report: any, idx: number) => (
+                    <ListGroup.Item key={idx} className="bg-transparent px-2 py-2 border-light small">
+                      <Badge bg={report.status === 'UP' ? 'success' : 'danger'} className="me-2">{report.status}</Badge>
+                      <span className="text-muted">{new Date(report.reported_at).toLocaleDateString()}</span>
                     </ListGroup.Item>
                   ))
                 ) : (
-                  <Alert variant="light" className="border-dashed py-4 text-center">No community reports logged.</Alert>
+                  <div className="p-3 text-center small text-muted">No community reports.</div>
                 )}
               </ListGroup>
-            </Card.Body>
-          </Card>
-        </Col>
+            </Col>
 
-        <Col md={6}>
-          <Card className="h-100 border-0 shadow-sm">
-            <Card.Header className="bg-white border-0 pt-4 px-4">
-              <h5 className="fw-bold mb-0">Official DOB History</h5>
-              <p className="small text-muted">Official complaints synced from NYC Open Data.</p>
-            </Card.Header>
-            <Card.Body className="px-4 pb-4">
-              <ListGroup variant="flush">
+            <Col md={6}>
+              <h6 className="fw-bold mb-3 text-info small text-uppercase">{t('official_history')}</h6>
+              <ListGroup variant="flush" className="border rounded bg-light p-2">
                 {officialReports.length > 0 ? (
-                  officialReports.map((report: any, idx: number) => (
-                    <ListGroup.Item key={idx} className="px-0 py-3 border-light">
-                      <div className="d-flex justify-content-between">
-                        <Badge bg="info-subtle" className="text-info mb-2">DOB COMPLAINT</Badge>
-                        <small className="text-muted">{new Date(report.reported_at).toLocaleDateString()}</small>
-                      </div>
-                      <p className="mb-0 small fw-medium">Official record of elevator inoperative.</p>
+                  officialReports.slice(0, 5).map((report: any, idx: number) => (
+                    <ListGroup.Item key={idx} className="bg-transparent px-2 py-2 border-light small">
+                      <Badge bg="info" className="me-2">DOB</Badge>
+                      <span className="text-muted">{new Date(report.reported_at).toLocaleDateString()}</span>
                     </ListGroup.Item>
                   ))
                 ) : (
-                  <Alert variant="light" className="border-dashed py-4 text-center">No official DOB complaints found.</Alert>
+                  <div className="p-3 text-center small text-muted">No official DOB data.</div>
                 )}
               </ListGroup>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
 
       <div className="d-flex justify-content-between align-items-center mb-4 mt-5">
-        <h4 className="fw-bold mb-0">Public Media & Local News</h4>
-        <button 
-          className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+        <h4 className="fw-bold mb-0">📰 {t('news_section')}</h4>
+        <button
+          className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold"
+          aria-label={t('news_section') + ' refresh'}
           onClick={async () => {
             const token = localStorage.getItem('token');
-            if (!token) return triggerToast("Please log in to refresh building data.", "warning");
-            
+            if (!token) return triggerToast(t('login_required'), "warning");
             try {
               const res = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/refresh_news/`, {
                 method: 'POST',
                 headers: { 'Authorization': `Token ${token}` }
               });
-              
-              const data = await res.json();
-              
-              if (res.ok) {
-                triggerToast("Data sync started. New articles will appear shortly.", "success");
-              } else if (res.status === 429) {
-                triggerToast(data.message || "Cooldown in effect. Please try again later.", "warning");
-              } else {
-                triggerToast(data.error || "An error occurred.", "danger");
-              }
-            } catch (e) {
-              console.error("Refresh error:", e);
-              triggerToast("Network error occurred", "danger");
-            }
+              if (res.ok) triggerToast("Sync started!", "success");
+            } catch (e) { triggerToast("Error syncing news", "danger"); }
           }}
         >
-          Refresh Media History
+          Refresh
         </button>
       </div>
-      <p className="text-muted mb-4">Contextual news reports regarding this building's record of service and safety.</p>
       
-      <Row className="g-4">
+      <Row className="g-3">
         {buildingData.news_articles && buildingData.news_articles.length > 0 ? (
           buildingData.news_articles.map((article: any, idx: number) => (
             <Col md={6} key={idx}>
-              <Card className="h-100 border-0 shadow-sm">
-                <Card.Body className="p-4">
+              <Card className="h-100 border-0 shadow-sm rounded-4">
+                <Card.Body className="p-3">
                   <div className="d-flex justify-content-between mb-2">
-                    <small className="text-primary fw-bold text-uppercase">{article.source}</small>
-                    <small className="text-muted">{article.published_date}</small>
+                    <small className="text-primary fw-bold text-uppercase fs-8">{article.source}</small>
+                    <small className="text-muted fs-8">{article.published_date}</small>
                   </div>
-                  <h5 className="fw-bold mb-3">{article.title}</h5>
-                  <p className="text-muted small mb-4">{article.summary}</p>
-                  <a 
-                    href={article.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="btn btn-outline-primary btn-sm rounded-pill px-3"
-                    aria-label={`Read full article: ${article.title} (opens in new window)`}
-                  >
-                    Read Article
-                  </a>
+                  <h6 className="fw-bold mb-2">{article.title}</h6>
+                  <p className="text-muted fs-8 mb-3">{article.summary}</p>
+                  <a href={article.url} target="_blank" rel="noopener noreferrer" className="btn btn-link p-0 fs-8 fw-bold" aria-label={`Read full story: ${article.title}`}>Read Full Story →</a>
                 </Card.Body>
               </Card>
             </Col>
           ))
         ) : (
           <Col xs={12}>
-            <Alert variant="light" className="border-dashed py-5 text-center">
-              <p className="mb-0 text-muted">No media mentions found for this building yet.</p>
-              <small className="text-muted italic">(News synchronization is performed automatically for active buildings.)</small>
-            </Alert>
+            <Alert variant="light" className="border-dashed py-4 text-center text-muted small">No media mentions found.</Alert>
           </Col>
         )}
       </Row>

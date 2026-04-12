@@ -24,7 +24,9 @@ function MainDashboard() {
     borough: 'Manhattan'
   });
   const [activeBuilding, setActiveBuilding] = useState<any>(null);
+  const [searchError, setSearchError] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -77,7 +79,8 @@ function MainDashboard() {
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+    setSearchError('');
+
     startTransition(async () => {
       try {
         const { house_number, street, borough } = searchData;
@@ -89,10 +92,11 @@ function MainDashboard() {
           const data = await response.json();
           navigate(`/building/${data.bin}`);
         } else {
-          alert("Building not found. Double-check your search.");
+          setSearchError(t('building_not_found'));
         }
       } catch (error) {
         console.error("Search Error:", error);
+        setSearchError(t('building_not_found'));
       }
     });
   };
@@ -141,23 +145,31 @@ function MainDashboard() {
 
   return (
     <Container fluid className="p-0 bg-light min-vh-100">
-      <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm sticky-top">
+      <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm sticky-top py-2 py-lg-3">
         <Container>
           <Navbar.Brand 
             as={Link} 
             to="/" 
-            className="fw-bold text-uppercase d-flex align-items-center"
+            className="fw-bold text-uppercase d-flex align-items-center fs-5 fs-md-4"
           >
             <span className="text-primary me-2">🏢</span> Elevator Advocacy
           </Navbar.Brand>
-          <Nav className="ms-auto align-items-center">
-            <Button variant="outline-light" size="sm" onClick={toggleLanguage} aria-label="Toggle Language" className="me-3 border-0">
-              {i18n.language === 'en' ? 'ES' : 'EN'}
+          <div className="d-flex align-items-center ms-auto">
+            <Button 
+              variant="link" 
+              className="text-info text-decoration-none fw-bold me-2 me-md-3 p-0 fs-7 fs-md-6"
+              onClick={() => setShowGuide(true)}
+            >
+              ❓ {t('how_to_use')}
+            </Button>
+            <Button variant="outline-light" size="sm" onClick={toggleLanguage} aria-label="Toggle Language" className="me-2 me-md-3 border-0 fw-bold">
+              🌐 {i18n.language === 'en' ? 'ES' : 'EN'}
             </Button>
             {isLoggedIn ? (
               <Dropdown align="end">
                 <Dropdown.Toggle variant="outline-info" size="sm" className="fw-bold px-3">
-                  {username}
+                  <span className="d-none d-md-inline">{username}</span>
+                  <span className="d-md-none">👤</span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item onClick={handleLogout}>Log Out</Dropdown.Item>
@@ -173,7 +185,7 @@ function MainDashboard() {
                 {t('login_button')}
               </Button>
             )}
-          </Nav>
+          </div>
         </Container>
       </Navbar>
 
@@ -193,41 +205,77 @@ function MainDashboard() {
         </Modal.Body>
       </Modal>
 
+      {/* User Guide Modal */}
+      <Modal show={showGuide} onHide={() => setShowGuide(false)} centered size="md">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold text-primary fs-4">{t('user_guide_title')}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4 pt-3">
+          <div className="user-guide-steps">
+            {[1, 2, 3, 4].map((num) => (
+              <div key={num} className="d-flex align-items-center mb-4">
+                <div className="bg-light rounded-circle shadow-sm p-2 d-flex align-items-center justify-content-center border me-3" style={{ width: '56px', height: '56px', minWidth: '56px' }}>
+                  <span className="fs-3">
+                    {num === 1 ? '🏢' : num === 2 ? '🔘' : num === 3 ? '📞' : '📝'}
+                  </span>
+                </div>
+                <p className="mb-0 fs-5 text-dark fw-medium leading-tight">
+                  {t(`guide_step_${num}` as any).replace(/^\d\.\s/, '')}
+                </p>
+              </div>
+            ))}
+          </div>
+          <Button variant="primary" className="w-100 py-3 fw-bold rounded-pill shadow-sm mt-3 fs-5" onClick={() => setShowGuide(false)}>
+            {t('got_it')}
+          </Button>
+        </Modal.Body>
+      </Modal>
+
       {!bin ? (
-        <div className="container mt-5 pb-5">
-          <HeroSearch 
-            onSearch={handleSearch} 
-            searchData={searchData} 
-            setSearchData={setSearchData} 
+        <div className="container mt-3 mt-md-5 pb-5 px-3">
+          <HeroSearch
+            onSearch={handleSearch}
+            searchData={searchData}
+            setSearchData={setSearchData}
             isPending={isPending}
           />
-          <Row className="mt-5">
-             <Col md={10} className="mx-auto text-center mb-5">
-                <h2 className="fw-bold mb-4">Explore NYC Elevator Outages</h2>
-                <BuildingsMap onBuildingSelect={(binId) => navigate(`/building/${binId}`)} />
+          {searchError && (
+            <Alert variant="danger" className="mt-2" role="alert">
+              {searchError}
+            </Alert>
+          )}
+          <Row className="mt-4 mt-md-5">
+             <Col md={12} lg={10} className="mx-auto text-center mb-5">
+                <h2 className="fw-bold mb-4 px-3 fs-3 fs-md-2">Explore NYC Elevator Outages</h2>
+                <div className="px-1 px-md-2">
+                  <BuildingsMap onBuildingSelect={(binId) => navigate(`/building/${binId}`)} />
+                </div>
              </Col>
           </Row>
         </div>
       ) : (
-        <Container className="mt-4 pb-5">
+        <Container className="mt-3 mt-md-4 pb-5 px-3">
           <Button 
             variant="link" 
-            className="text-decoration-none mb-3 p-0 d-flex align-items-center text-muted"
+            className="text-decoration-none mb-3 p-0 d-flex align-items-center text-muted fw-bold"
             onClick={() => navigate('/')}
           >
-            <span className="me-2">←</span> Back to Search
+            <span className="me-2">←</span> {t('search_address')}
           </Button>
           
           {activeBuilding && (
-            <Row>
+            <Row className="g-4">
               <Col lg={7}>
-                <BuildingDetail buildingData={activeBuilding} />
+                <BuildingDetail
+                  buildingData={activeBuilding}
+                  isLoggedIn={isLoggedIn}
+                  onReportOptimistic={(report: any) => addOptimisticReport(report)}
+                  refreshBuilding={() => fetchBuilding(activeBuilding.bin)}
+                />
               </Col>
               <Col lg={5}>
-                <div className="sticky-top" style={{ top: '80px', zIndex: 10 }}>
-                  {isLoggedIn ? (
-                    <ReportForm onReport={handleReport} isPending={isPending} />
-                  ) : (
+                <div className="sticky-lg-top" style={{ top: '100px', zIndex: 10 }}>
+                  {!isLoggedIn && (
                     <SignupForm onSuccess={(data) => {
                       setIsLoggedIn(true);
                       setUsername(data.username);
@@ -238,7 +286,7 @@ function MainDashboard() {
                     }} />
                   )}
 
-                  <div className="mt-4 p-4 bg-white border rounded shadow-sm">
+                  <div className={`p-4 bg-white border rounded shadow-sm ${!isLoggedIn ? 'mt-4' : ''}`}>
                     <h5 className="mb-3 d-flex justify-content-between align-items-center">
                       Building Feed
                       {optimisticReports.length > 0 && <Badge bg="primary" pill>{optimisticReports.length}</Badge>}
