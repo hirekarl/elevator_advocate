@@ -52,7 +52,7 @@ class NewsSearchService:
             try:
                 # Native Structured Output with Pydantic
                 response = self.client.models.generate_content(
-                    model="gemini-2.0-flash",
+                    model="gemini-2.5-flash",
                     contents=f"Extract elevator-related news from this snippet. Title: {res.get('title')}\nSnippet: {res.get('snippet')}\nURL: {res.get('link')}",
                     config={
                         'response_mime_type': 'application/json',
