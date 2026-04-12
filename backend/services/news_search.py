@@ -2,7 +2,6 @@ import os
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import date
-import instructor
 from google import genai
 import serpapi
 
@@ -28,12 +27,8 @@ class NewsSearchService:
         self.gemini_api_key = os.getenv("GEMINI_API_KEY")
         
         if self.gemini_api_key:
-            # Patching for instructor (using OpenAI compatibility layer for Gemini)
-            self.instructor_client = instructor.from_openai(
-                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-                api_key=self.gemini_api_key,
-                model="gemini-2.0-flash"
-            )
+            # Native Google GenAI Client
+            self.client = genai.Client(api_key=self.gemini_api_key)
 
     def search_and_extract(self, address: str) -> List[NewsArticleSchema]:
         """
@@ -43,29 +38,34 @@ class NewsSearchService:
             return self.get_mock_results(address)
 
         # 1. Search via SerpAPI (New Client Syntax)
-        client = serpapi.Client(api_key=self.serp_api_key)
-        results = client.search({
+        serp_client = serpapi.Client(api_key=self.serp_api_key)
+        results = serp_client.search({
             "engine": "google",
             "q": f'"{address}" NYC elevator outage complaint news',
             "location": "New York, New York, United States",
         })
         organic_results = results.get("organic_results", [])[:5]
 
-        # 2. Extract and Validate via Gemini + Instructor
+        # 2. Extract and Validate via Native Gemini SDK
         articles = []
         for res in organic_results:
             try:
-                article = self.instructor_client.chat.completions.create(
+                # Native Structured Output with Pydantic
+                response = self.client.models.generate_content(
                     model="gemini-2.0-flash",
-                    response_model=NewsArticleSchema,
-                    messages=[
-                        {"role": "system", "content": "Extract elevator-related news from this snippet. Score relevance 0-1."},
-                        {"role": "user", "content": f"Title: {res.get('title')}\nSnippet: {res.get('snippet')}\nURL: {res.get('link')}"}
-                    ]
+                    contents=f"Extract elevator-related news from this snippet. Title: {res.get('title')}\nSnippet: {res.get('snippet')}\nURL: {res.get('link')}",
+                    config={
+                        'response_mime_type': 'application/json',
+                        'response_schema': NewsArticleSchema,
+                    }
                 )
-                articles.append(article)
+                
+                # The SDK automatically parses JSON into the Pydantic model
+                article = response.parsed
+                if article:
+                    articles.append(article)
             except Exception as e:
-                print(f"Extraction Error: {e}")
+                print(f"Extraction Error for {res.get('title')}: {e}")
 
         return articles
 
