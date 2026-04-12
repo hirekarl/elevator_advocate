@@ -35,19 +35,21 @@ class SODAService:
             print(f"SODA Error: {e}")
             return []
 
-    def get_recent_outages(self, days: int = 7) -> List[Dict[str, Any]]:
+    def get_recent_outages(self, hours: int = 24) -> List[Dict[str, Any]]:
         """
-        Fetches all elevator-related outages across NYC from the last N days.
+        Fetches all elevator-related outages across NYC from the last N hours.
         """
-        # Floating timestamp format for SODA: YYYY-MM-DDTHH:MM:SS
-        date_limit = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        # SODA floating timestamp format: YYYY-MM-DDTHH:MM:SS
+        from datetime import datetime, timedelta
+        limit_date = (datetime.now() - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
         
-        where_clause = f"descriptor IN ('81', '63') AND created_date > '{date_limit}'"
+        where_clause = f"descriptor IN ('81', '63') AND created_date > '{limit_date}'"
         params = {"$where": where_clause, "$$app_token": self.app_token}
 
         try:
-            response = requests.get(self.BASE_URL, params=params, timeout=10)
+            response = requests.get(self.BASE_URL, params=params, timeout=15)
             response.raise_for_status()
             return response.json()
-        except requests.RequestException:
+        except requests.RequestException as e:
+            print(f"SODA Sync Error: {e}")
             return []
