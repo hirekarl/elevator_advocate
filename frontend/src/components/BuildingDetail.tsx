@@ -30,6 +30,37 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
             </Badge>
           </div>
 
+          {localStorage.getItem('token') && (
+            <div className="mb-4">
+              <Button 
+                variant="outline-primary" 
+                size="sm" 
+                className="rounded-pill px-3"
+                onClick={async () => {
+                  try {
+                    const res = await fetch('http://localhost:8000/api/auth/set_primary_building/', {
+                      method: 'POST',
+                      headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${localStorage.getItem('token')}`
+                      },
+                      body: JSON.stringify({ bin: buildingData.bin })
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      localStorage.setItem('primary_building_bin', buildingData.bin);
+                      alert(data.message);
+                    }
+                  } catch (e) {
+                    console.error("Home building error:", e);
+                  }
+                }}
+              >
+                Set as Home Building
+              </Button>
+            </div>
+          )}
+
           <Row className="g-4 mt-2">
             <Col md={6}>
               <div className="p-3 bg-light rounded border">

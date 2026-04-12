@@ -3,7 +3,7 @@ import { Form, Button, Alert, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 
 interface AuthFormsProps {
-  onSuccess: () => void;
+  onSuccess: (data: any) => void;
 }
 
 export function SignupForm({ onSuccess }: AuthFormsProps) {
@@ -55,8 +55,11 @@ export function SignupForm({ onSuccess }: AuthFormsProps) {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', data.username);
+        if (data.primary_building) {
+          localStorage.setItem('primary_building_bin', data.primary_building.bin);
+        }
         setStatus({ type: 'success', message: 'Signed in successfully!' });
-        onSuccess();
+        onSuccess(data);
       } else {
         setStatus({ type: 'danger', message: data.error || 'Login failed.' });
       }

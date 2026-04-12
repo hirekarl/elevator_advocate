@@ -44,10 +44,20 @@ class AuthViewSet(viewsets.ViewSet):
 
         if user:
             token, _ = Token.objects.get_or_create(user=user)
+            
+            # Fetch primary building if associated
+            primary_building = None
+            if hasattr(user, 'profile') and user.profile.primary_building:
+                primary_building = {
+                    "bin": user.profile.primary_building.bin,
+                    "address": user.profile.primary_building.address
+                }
+
             return Response({
                 "token": token.key,
                 "username": user.username,
-                "email": user.email
+                "email": user.email,
+                "primary_building": primary_building
             })
 
         # 3. Differentiate for better user experience (Handle unconfirmed accounts)
@@ -64,6 +74,27 @@ class AuthViewSet(viewsets.ViewSet):
     def logout(self, request):
         request.user.auth_token.delete()
         return Response({"message": "Successfully logged out."})
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def set_primary_building(self, request):
+        """
+        Couples the authenticated user to a specific building BIN.
+        """
+        bin_id = request.data.get('bin')
+        if not bin_id:
+            return Response({"error": "BIN is required."}, status=400)
+            
+        try:
+            building = Building.objects.get(bin=bin_id)
+            profile = request.user.profile
+            profile.primary_building = building
+            profile.save()
+            return Response({
+                "message": f"Successfully set {building.address} as your home building.",
+                "primary_building": {"bin": building.bin, "address": building.address}
+            })
+        except Building.DoesNotExist:
+            return Response({"error": "Building not found."}, status=404)
 
     @action(detail=False, methods=['post'])
     def signup(self, request):

@@ -71,3 +71,13 @@ class BuildingNews(models.Model):
 
     def __str__(self) -> str:
         return f"News: {self.title} ({self.source})"
+
+class UserProfile(models.Model):
+    """
+    Extends the base User to include a primary building association.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    primary_building = models.ForeignKey(Building, on_delete=models.SET_NULL, null=True, blank=True, related_name='residents')
+    
+    def __str__(self) -> str:
+        return f"Profile for {self.user.username}"
