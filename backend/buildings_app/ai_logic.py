@@ -81,3 +81,55 @@ class PredictiveEngine:
             return "PREVENTATIVE: High risk predicted, maintenance may have intervened."
         
         return "NOMINAL: Tracking within expected parameters."
+
+class AdvocacyStrategist:
+    """
+    Sol's Advocacy Engine: Maps data against NYC housing law to suggest 
+    specific legal/organizing next steps and generates 311 scripts.
+    """
+
+    @staticmethod
+    def generate_311_script(building: Building) -> Dict[str, Any]:
+        """
+        Generates a professional 311 report script based on the building's 
+        verified status and historical data.
+        """
+        from .logic import ConsensusManager
+        manager = ConsensusManager()
+        
+        status = manager.get_verified_status(building)
+        loss_of_service = manager.get_loss_of_service_percentage(building)
+        
+        # Determine the urgency and script content
+        is_down = status == 'DOWN'
+        
+        if is_down:
+            headline = f"URGENT: Inoperative Elevator at {building.address}"
+            opening = f"I am calling to report that the elevator at {building.address} is currently out of service."
+            data_point = f"Our community data indicates this building has suffered a {loss_of_service}% loss of service over the last 30 days."
+            legal_context = (
+                "Under the NYC Housing Maintenance Code (Administrative Code §27-2005), "
+                "the owner is required to keep the premises in good repair, including elevator service. "
+                "Failure to provide elevator service in a building with six or more stories is a 'Class C' "
+                "immediately hazardous violation."
+            )
+            closing = (
+                "Please log this complaint immediately. I would like to receive the Service Request (SR) "
+                "number for my records to track the Department of Buildings (DOB) response."
+            )
+        else:
+            headline = f"Maintenance Inquiry: {building.address}"
+            opening = f"I am calling regarding the elevator maintenance record at {building.address}."
+            data_point = f"While currently operational, this building has a {loss_of_service}% loss of service record recently."
+            legal_context = "I am requesting a proactive inspection of the elevator equipment to prevent further entrapments or outages."
+            closing = "Please provide a reference number for this inquiry."
+
+        script = f"{opening}\n\n{data_point}\n\n{legal_context}\n\n{closing}"
+
+        return {
+            "headline": headline,
+            "script": script,
+            "status_context": status,
+            "loss_of_service": loss_of_service,
+            "legal_reference": "NYC Administrative Code §27-2005"
+        }

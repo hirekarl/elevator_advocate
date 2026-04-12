@@ -181,6 +181,16 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
             'verified_status': serializer.data['verified_status']
         })
 
+    @action(detail=True, methods=['get'])
+    def advocacy_script(self, request, bin=None):
+        """
+        Generates a 311 reporting script using Sol's AdvocacyStrategist.
+        """
+        building = self.get_object()
+        from .ai_logic import AdvocacyStrategist
+        script_data = AdvocacyStrategist.generate_311_script(building)
+        return Response(script_data)
+
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def refresh_news(self, request, bin=None):
         """

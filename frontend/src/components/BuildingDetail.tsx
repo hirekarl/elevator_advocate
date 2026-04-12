@@ -1,4 +1,5 @@
-import { Card, ProgressBar, ListGroup, Badge, Alert, Row, Col } from 'react-bootstrap';
+import { useState, useEffect } from 'react';
+import { Card, ProgressBar, ListGroup, Badge, Alert, Row, Col, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 
 interface BuildingDetailProps {
@@ -7,6 +8,29 @@ interface BuildingDetailProps {
 
 export function BuildingDetail({ buildingData }: BuildingDetailProps) {
   const { t } = useTranslation();
+  const [advocacyScript, setAdvocacyScript] = useState<any>(null);
+  const [isLoadingScript, setIsLoadingScript] = useState(false);
+
+  useEffect(() => {
+    if (buildingData?.bin) {
+      fetchAdvocacyScript();
+    }
+  }, [buildingData?.bin]);
+
+  const fetchAdvocacyScript = async () => {
+    setIsLoadingScript(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/advocacy_script/`);
+      if (response.ok) {
+        const data = await response.json();
+        setAdvocacyScript(data);
+      }
+    } catch (error) {
+      console.error("Error fetching advocacy script:", error);
+    } finally {
+      setIsLoadingScript(false);
+    }
+  };
 
   if (!buildingData) return null;
 
@@ -66,11 +90,11 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
               <div className="p-3 bg-light rounded border">
                 <h6 className="text-uppercase fw-bold text-muted small mb-3">Service Reliability</h6>
                 <div className="d-flex align-items-end mb-2">
-                  <span className="display-6 fw-bold me-2">{100 - buildingData.loss_of_service_30d}%</span>
+                  <span className="display-6 fw-bold me-2">{100 - (buildingData.loss_of_service_30d || 0)}%</span>
                   <span className="text-muted mb-1 pb-1">Uptime (30d)</span>
                 </div>
                 <ProgressBar 
-                  now={100 - buildingData.loss_of_service_30d} 
+                  now={100 - (buildingData.loss_of_service_30d || 0)} 
                   variant={buildingData.loss_of_service_30d > 10 ? 'warning' : 'success'}
                   style={{ height: '8px' }}
                 />
@@ -80,11 +104,11 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
               <div className="p-3 bg-light rounded border">
                 <h6 className="text-uppercase fw-bold text-muted small mb-3">Maintenance Forecast</h6>
                 <div className="d-flex align-items-end mb-2">
-                  <span className="display-6 fw-bold me-2">{buildingData.failure_risk?.risk_score}%</span>
+                  <span className="display-6 fw-bold me-2">{buildingData.failure_risk?.risk_score || 0}%</span>
                   <span className="text-muted mb-1 pb-1">Risk Level</span>
                 </div>
                 <ProgressBar 
-                  now={buildingData.failure_risk?.risk_score} 
+                  now={buildingData.failure_risk?.risk_score || 0} 
                   variant={buildingData.failure_risk?.risk_score > 60 ? 'danger' : 'warning'}
                   style={{ height: '8px' }}
                 />
@@ -94,7 +118,51 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
         </Card.Body>
       </Card>
 
-      <h4 className="fw-bold mb-4 mt-5">Historical Action Timeline</h4>
+      {/* 311 Advocacy Script Section */}
+      <h4 className="fw-bold mb-4 mt-5">Advocacy Center</h4>
+      <Card className="border-0 shadow-sm bg-primary text-white mb-5 overflow-hidden">
+        <Card.Body className="p-4 position-relative">
+          <div className="position-relative" style={{ zIndex: 1 }}>
+            <div className="d-flex align-items-center mb-3">
+              <span className="fs-3 me-2">📢</span>
+              <h5 className="fw-bold mb-0">311 Reporting Script</h5>
+            </div>
+            {isLoadingScript ? (
+              <p className="mb-0 italic opacity-75 text-white">Generating custom advocacy strategy...</p>
+            ) : advocacyScript ? (
+              <>
+                <h6 className="fw-bold text-info mb-3">{advocacyScript.headline}</h6>
+                <div className="p-3 bg-white text-dark rounded border-start border-info border-4 mb-3">
+                  <pre className="mb-0 text-wrap font-monospace small" style={{ whiteSpace: 'pre-wrap' }}>
+                    {advocacyScript.script}
+                  </pre>
+                </div>
+                <div className="d-flex justify-content-between align-items-center">
+                  <small className="opacity-75">Legal Context: {advocacyScript.legal_reference}</small>
+                  <Button 
+                    variant="light" 
+                    size="sm" 
+                    className="rounded-pill px-3 fw-bold"
+                    onClick={() => {
+                      navigator.clipboard.writeText(advocacyScript.script);
+                      alert("Script copied to clipboard!");
+                    }}
+                  >
+                    Copy Script
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <p className="mb-0 opacity-75">No advocacy strategy available for this building status.</p>
+            )}
+          </div>
+          <div className="position-absolute bottom-0 end-0 opacity-10" style={{ fontSize: '100px', transform: 'translate(20%, 20%)' }}>
+            ⚖️
+          </div>
+        </Card.Body>
+      </Card>
+
+      <h4 className="fw-bold mb-4">Historical Action Timeline</h4>
       
       <Row>
         <Col md={6}>
