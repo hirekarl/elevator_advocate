@@ -150,6 +150,23 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
             'verified_status': serializer.data['verified_status']
         })
 
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def refresh_news(self, request, bin=None):
+        """
+        Manually triggers the news extraction task for this building.
+        Requires authentication to prevent API abuse.
+        """
+        building = self.get_object()
+        from .tasks import fetch_building_news
+        
+        # Enqueue the task using Django 6.0 Task Framework
+        fetch_building_news.enqueue(bin=building.bin)
+        
+        return Response({
+            "message": f"News refresh for {building.address} has been queued.",
+            "status": "QUEUED"
+        })
+
     @action(detail=False, methods=['get'])
     def lookup(self, request):
         """

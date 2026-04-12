@@ -121,7 +121,30 @@ export function BuildingDetail({ buildingData }: BuildingDetailProps) {
         </Col>
       </Row>
 
-      <h4 className="fw-bold mb-4 mt-5">Public Media & Local News</h4>
+      <div className="d-flex justify-content-between align-items-center mb-4 mt-5">
+        <h4 className="fw-bold mb-0">Public Media & Local News</h4>
+        <button 
+          className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+          onClick={async () => {
+            const token = localStorage.getItem('token');
+            if (!token) return alert("Please log in to refresh building data.");
+            
+            try {
+              const res = await fetch(`http://localhost:8000/api/buildings/${buildingData.bin}/refresh_news/`, {
+                method: 'POST',
+                headers: { 'Authorization': `Token ${token}` }
+              });
+              if (res.ok) {
+                alert("Data sync started. New articles will appear shortly.");
+              }
+            } catch (e) {
+              console.error("Refresh error:", e);
+            }
+          }}
+        >
+          Refresh Media History
+        </button>
+      </div>
       <p className="text-muted mb-4">Contextual news reports regarding this building's record of service and safety.</p>
       
       <Row className="g-4">
