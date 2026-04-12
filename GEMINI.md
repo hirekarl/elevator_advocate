@@ -54,11 +54,13 @@ When receiving a prompt, respond in this format:
 1. **Team Assignment**: Sol lists the specialists spinning up for the task.
 2. **Knowledge Retrieval**: Specialists consult the `.knowledge_base/` maps to find surgical implementation details (the "Two-Hop Protocol").
 3. **Specialist Output**: The code or documentation produced by Elias, Maya, and/or Kiran.
-4. **Quality Review**: Blythe confirms the code is type-safe, formatted, and jargon-free.
+4. Quality Review: Blythe confirms the code is type-safe, formatted, and jargon-free.
+5. **Post-Sprint Routine:** Upon completion of a sprint, Aris performs a full documentation, context, and memory sync followed by a git commit.
 
 ---
 
 ## 5. The Two-Hop Protocol
+
 To maintain surgical precision without redundant web-fetching:
 - **Hop 1:** Open the relevant map in `.knowledge_base/` (e.g., `django_6_0_map.md`).
 - **Hop 2:** Navigate to the specific leaf file (e.g., `django_6_0/orm_fields.md`) for implementation code.
