@@ -16,10 +16,11 @@
 ## Data & External APIs
 - **NYC Geoclient API v2:** [NYC Developer Portal](https://developer.cityofnewyork.us/api/geoclient-api)
 - **NYC SODA API (Elevator Complaints):** [Dataset `kqwi-7ncn`](https://data.cityofnewyork.us/resource/kqwi-7ncn.json)
+- **AI Intelligence & Media Hub:** [Map: ai_intelligence_map.md](./ai_intelligence_map.md)
 - **SODA SoQL Query Guide:** [Socrata Documentation](https://dev.socrata.com/docs/queries/)
 
 ## Specialist Assignments
-- **Elias:** Django 6.0, `uv`, PostgreSQL
-- **Maya:** React 19, Tailwind, Vite
-- **Kiran:** Geoclient, SODA API
-- **Blythe:** Ruff, Mypy, PEP-8 Standards
+- **Elias:** Django 6.0, `uv`, PostgreSQL, Task Orchestration
+- **Maya:** React 19, Tailwind, Vite, UI Optimization
+- **Kiran:** Geoclient, SODA API, Gemini AI Extraction, SerpAPI Discovery
+- **Blythe:** Ruff, Mypy, PEP-8 Standards, Plain English Enforcer
