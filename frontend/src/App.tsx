@@ -1,35 +1,52 @@
-import { useState, useOptimistic, useTransition } from 'react';
-import { Container, Navbar, Nav, Button, Card, Row, Col, Alert } from 'react-bootstrap';
+import { useState, useOptimistic, useTransition, useEffect } from 'react';
+import { Container, Navbar, Nav, Button, Row, Col, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { ReportForm } from './components/ReportForm';
 
 function App() {
   const { t, i18n } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [reports, setReports] = useState<any[]>([]);
 
-  // React 19 useOptimistic for instant UI feedback
+  // Fetch building status
+  const fetchStatus = async (bin: string) => {
+    const res = await fetch(`/api/buildings/${bin}/status/`);
+    return res.json();
+  };
+
   const [optimisticReports, addOptimisticReport] = useOptimistic(
     reports,
-    (state, newReport: any) => [...state, { ...newReport, pending: true }]
+    (state, newReport: any) => [{ ...newReport, pending: true }, ...state]
   );
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en');
   };
 
-  const reportOutage = () => {
-    const newReport = { id: Date.now(), status: 'DOWN', time: new Date().toLocaleTimeString() };
-    
+  const handleReport = (formData: any) => {
     startTransition(async () => {
-      addOptimisticReport(newReport);
-      // TODO: Implement API call to backend/api/reports/
-      await new Promise(res => setTimeout(res, 2000)); // Simulate latency
-      setReports(prev => [...prev, newReport]);
+      const tempReport = { id: Date.now(), status: formData.status, time: new Date().toLocaleTimeString() };
+      addOptimisticReport(tempReport);
+
+      try {
+        const response = await fetch('/api/reports/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setReports(prev => [{ ...data, id: data.reported_at }, ...prev]);
+        }
+      } catch (error) {
+        console.error("API Error:", error);
+      }
     });
   };
 
   return (
-    <Container fluid p-0>
+    <Container fluid className="p-0">
       <Navbar bg="dark" variant="dark" expand="lg">
         <Container>
           <Navbar.Brand href="#">Elevator Advocacy</Navbar.Brand>
@@ -44,41 +61,28 @@ function App() {
       <Container className="mt-4">
         <Row>
           <Col md={{ span: 8, offset: 2 }}>
-            <Card className="text-center">
-              <Card.Header as="h1">{t('report_outage')}</Card.Header>
-              <Card.Body>
-                <Button 
-                  variant="danger" 
-                  size="lg" 
-                  onClick={reportOutage} 
-                  disabled={isPending}
-                  aria-live="polite"
-                >
-                  {isPending ? t('syncing') : t('report_outage')}
-                </Button>
-              </Card.Body>
-            </Card>
+            <ReportForm onReport={handleReport} isPending={isPending} />
 
             <div className="mt-4">
               {optimisticReports.length === 0 ? (
                 <Alert variant="info" role="alert">{t('no_outages')}</Alert>
               ) : (
                 optimisticReports.map((report: any) => (
-                  <Card key={report.id} className={`mb-3 ${report.pending ? 'border-warning animate-pulse' : ''}`}>
-                    <Card.Body>
-                      <Card.Title>
+                  <div key={report.id || report.reported_at} className={`card mb-3 ${report.pending ? 'border-warning animate-pulse' : 'border-success'}`}>
+                    <div className="card-body">
+                      <h5 className="card-title">
                         {report.pending ? t('verification_pending') : t('verified_status')}
-                      </Card.Title>
-                      <Card.Text>
-                        {report.status} - {report.time}
-                      </Card.Text>
+                      </h5>
+                      <p className="card-text">
+                        {report.status} - {report.reported_at || report.time}
+                      </p>
                       {report.pending && (
-                        <div className="text-warning" aria-hidden="true">
-                           Pulse Amber State
+                        <div className="text-warning small" aria-hidden="true">
+                          ● {t('syncing')}
                         </div>
                       )}
-                    </Card.Body>
-                  </Card>
+                    </div>
+                  </div>
                 ))
               )}
             </div>
