@@ -57,7 +57,17 @@ const resources = {
       "community_reports": "Tenant Community Reports",
       "official_history": "Official DOB History",
       "news_section": "Public Media & Local News",
-      "building_not_found": "Building not found. Please double-check the address and try again."
+      "building_not_found": "Building not found. Please double-check the address and try again.",
+      "emergency_reports": "Emergency Reports",
+      "status_trapped_label": "People Trapped Inside",
+      "status_unsafe_label": "Unsafe Conditions",
+      "emergency_reports_note": "Only use for active emergencies. These reports are flagged as urgent.",
+      "call_311_now": "Call 311 Now",
+      "call_311_desc": "Free NYC helpline — available 24/7",
+      "call_311_number": "212-639-9675",
+      "report_login_cta": "Sign in to submit a report and help your neighbors.",
+      "verification_explainer": "Two neighbors confirming the same status within 2 hours marks it Verified.",
+      "sign_in": "Sign In"
     }
   },
   es: {
@@ -115,7 +125,17 @@ const resources = {
       "community_reports": "Informes de la comunidad de inquilinos",
       "official_history": "Historial oficial del DOB",
       "news_section": "Medios públicos y noticias locales",
-      "building_not_found": "Edificio no encontrado. Por favor, verifique la dirección e intente de nuevo."
+      "building_not_found": "Edificio no encontrado. Por favor, verifique la dirección e intente de nuevo.",
+      "emergency_reports": "Reportes de Emergencia",
+      "status_trapped_label": "Personas Atrapadas Adentro",
+      "status_unsafe_label": "Condiciones Inseguras",
+      "emergency_reports_note": "Solo para emergencias activas. Estos reportes son tratados con urgencia.",
+      "call_311_now": "Llamar al 311 Ahora",
+      "call_311_desc": "Línea gratuita de NYC — disponible 24/7",
+      "call_311_number": "212-639-9675",
+      "report_login_cta": "Inicia sesión para enviar un reporte y ayudar a tus vecinos.",
+      "verification_explainer": "Dos vecinos confirmando el mismo estado en 2 horas lo marca como Verificado.",
+      "sign_in": "Iniciar Sesión"
     }
   }
 };

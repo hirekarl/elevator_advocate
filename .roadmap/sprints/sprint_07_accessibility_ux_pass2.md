@@ -3,7 +3,7 @@
 **Date:** 2026-04-12
 **Lead:** Sol (Orchestrator)
 **Team:** Juno (audit), Maya (implementation), Blythe (validation)
-**Status:** IN PROGRESS — Juno audit complete, Maya implementation not yet started
+**Status:** IN PROGRESS — Juno audit complete, Maya implementation partially done (see resume point below)
 
 ---
 
@@ -84,6 +84,44 @@ call_311_desc: "NYC's free helpline — available 24/7"
 call_311_number: "212-639-9675"
 report_login_cta: "Sign in to submit a report and help your neighbors."
 verification_explainer: "Two neighbors confirming the same status within 2 hours marks it Verified."
+```
+
+---
+
+## Resume Point for Next Agent
+
+### DONE (committed or staged)
+- [x] i18n: all new EN + ES strings added (`emergency_reports`, `status_trapped_label`, `status_unsafe_label`, `emergency_reports_note`, `call_311_now`, `call_311_desc`, `call_311_number`, `report_login_cta`, `verification_explainer`, `sign_in`)
+- [x] `BuildingDetail.tsx`: `onShowAuth?: () => void` prop added to interface + destructuring
+- [x] `BuildingDetail.tsx`: status banner emojis wrapped in `<span aria-hidden="true">`
+- [x] `BuildingDetail.tsx`: TRAPPED + UNSAFE emergency buttons added below UP/DOWN/SLOW row
+- [x] `BuildingDetail.tsx`: verification explainer sentence added below quick_report_help
+- [x] `BuildingDetail.tsx`: logged-out inline CTA added (Sign In button triggers `onShowAuth`)
+
+### STILL TODO (not yet touched)
+1. **`BuildingDetail.tsx` — fix `<pre>` → `<div>`** in the advocacy script section (line ~328 in original, will be higher now due to additions). Find: `<pre className="mb-0 text-wrap font-monospace small" style={{ whiteSpace: 'pre-wrap' }}>` Replace with: `<div className="mb-0 small" style={{ whiteSpace: 'pre-wrap' }}>`
+2. **`BuildingDetail.tsx` — add Call 311 Now button** at the top of ZONE 3 (Advocacy), before the AI script card. Add a large `<a href="tel:311">` link styled as a danger button with the phone number visible.
+3. **`BuildingDetail.tsx` — move share links** (WhatsApp + email) to directly after the Copy Summary button, before the `<hr>`. Remove the `<hr>` separator.
+4. **`App.tsx` — wire `onShowAuth` prop** on the `<BuildingDetail>` call: add `onShowAuth={() => setShowAuthModal(true)}`
+5. **Run pre-flight**: `./backend/scripts/pre_flight.sh`
+6. **Commit** sprint 7 files only: `frontend/src/components/BuildingDetail.tsx`, `frontend/src/i18n.ts`, `frontend/src/App.tsx`
+
+### Call 311 button — suggested JSX (insert just before the AI script Card in ZONE 3)
+```tsx
+<a
+  href="tel:311"
+  className="d-flex align-items-center justify-content-between p-3 mb-3 bg-danger text-white rounded-4 text-decoration-none fw-bold shadow-sm"
+  aria-label={`${t('call_311_now')} — ${t('call_311_number')}`}
+>
+  <div>
+    <div className="fs-6"><span aria-hidden="true">📞</span> {t('call_311_now')}</div>
+    <small className="fw-normal opacity-75">{t('call_311_desc')}</small>
+  </div>
+  <div className="text-end">
+    <div className="fw-bold">{t('call_311_number')}</div>
+    <small className="fw-normal opacity-75">or dial 311</small>
+  </div>
+</a>
 ```
 
 ---

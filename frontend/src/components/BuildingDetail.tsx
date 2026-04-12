@@ -5,11 +5,12 @@ import { useTranslation } from 'react-i18next';
 interface BuildingDetailProps {
   buildingData: any;
   isLoggedIn?: boolean;
+  onShowAuth?: () => void;
   onReportOptimistic?: (report: any) => void;
   refreshBuilding?: () => void;
 }
 
-export function BuildingDetail({ buildingData, isLoggedIn = false, onReportOptimistic, refreshBuilding }: BuildingDetailProps) {
+export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, onReportOptimistic, refreshBuilding }: BuildingDetailProps) {
   const { t, i18n } = useTranslation();
   const [advocacyScript, setAdvocacyScript] = useState<any>(null);
   const [isLoadingScript, setIsLoadingScript] = useState(false);
@@ -188,9 +189,11 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onReportOptim
       {/* ZONE 1: Identity & Live Status */}
       <Card className="border-0 shadow mb-4 overflow-hidden">
         <div className={`bg-${getStatusVariant(buildingData.verified_status)} py-2 px-4 text-white fw-bold small text-uppercase`}>
-          {buildingData.verified_status === 'UNVERIFIED' 
-            ? `⚠️ ${t('verification_pending')} (${buildingData.verification_countdown}m)` 
-            : `✅ Current Status: ${buildingData.verified_status}`}
+          {buildingData.verified_status === 'UNVERIFIED' ? (
+            <><span aria-hidden="true">⚠️</span> {t('verification_pending')} ({buildingData.verification_countdown}m)</>
+          ) : (
+            <><span aria-hidden="true">✅</span> Current Status: {buildingData.verified_status}</>
+          )}
         </div>
         <Card.Body className="p-4">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4 gap-3">
@@ -272,9 +275,61 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onReportOptim
                 </Button>
               </Col>
             </Row>
-            <p className="mb-0 mt-3 text-muted small italic">
+            <p className="mb-0 mt-3 text-muted small">
               {t('quick_report_help')}
             </p>
+            <p className="mb-0 mt-1 text-muted small">
+              {t('verification_explainer')}
+            </p>
+
+            {/* Emergency reports */}
+            <div className="mt-3 pt-3 border-top border-danger border-opacity-25">
+              <h6 className="fw-bold small text-danger text-uppercase mb-2">
+                <span aria-hidden="true">🚨</span> {t('emergency_reports')}
+              </h6>
+              <Row className="g-2">
+                <Col xs={12} sm={6} className="d-flex">
+                  <Button
+                    variant="danger"
+                    disabled={isReporting}
+                    aria-label={t('status_trapped')}
+                    className="w-100 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border-0"
+                    onClick={() => handleReport('TRAPPED')}
+                  >
+                    <span aria-hidden="true">🆘</span>
+                    <span>{t('status_trapped_label')}</span>
+                  </Button>
+                </Col>
+                <Col xs={12} sm={6} className="d-flex">
+                  <Button
+                    variant="outline-danger"
+                    disabled={isReporting}
+                    aria-label={t('status_unsafe')}
+                    className="w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2"
+                    onClick={() => handleReport('UNSAFE')}
+                  >
+                    <span aria-hidden="true">⚠️</span>
+                    <span>{t('status_unsafe_label')}</span>
+                  </Button>
+                </Col>
+              </Row>
+              <p className="mb-0 mt-2 text-danger small">{t('emergency_reports_note')}</p>
+            </div>
+
+            {/* Logged-out inline CTA */}
+            {!isLoggedIn && (
+              <div className="mt-3 pt-3 border-top d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                <small className="text-muted">{t('report_login_cta')}</small>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="rounded-pill px-3 fw-bold flex-shrink-0"
+                  onClick={onShowAuth}
+                >
+                  {t('sign_in')}
+                </Button>
+              </div>
+            )}
           </div>
         </Card.Body>
       </Card>
