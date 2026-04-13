@@ -8,6 +8,11 @@ class GeoclientService:
     """
     Service wrapper for the NYC Geoclient v2 API.
     Maps street addresses to Building Identification Numbers (BIN).
+
+    Falls back to GeoSearchService automatically when the Geoclient
+    subscription key returns a 401 (e.g. during the provisioning window
+    after a new key is issued). Once the key activates, Geoclient takes
+    precedence again with no code changes required.
     """
 
     is_mocked = False
@@ -22,6 +27,9 @@ class GeoclientService:
     ) -> Dict[str, Any]:
         """
         Geocodes a street address and returns the BIN and latitude/longitude.
+
+        On a 401 response from Geoclient (key not yet active), delegates to
+        GeoSearchService so the rest of the app keeps working uninterrupted.
         """
         params = {
             "houseNumber": house_number,
@@ -42,7 +50,17 @@ class GeoclientService:
                 "latitude": data.get("latitude"),
                 "longitude": data.get("longitude"),
             }
-        except (requests.RequestException, KeyError) as e:
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code == 401:
+                print("Geoclient key not yet active (401) — falling back to GeoSearch.")
+                from services.geosearch import GeoSearchService
+
+                return GeoSearchService().get_bin_with_coordinates(
+                    house_number, street, borough
+                )
+            print(f"Geoclient Error: {e}")
+            return {}
+        except requests.RequestException as e:
             print(f"Geoclient Error: {e}")
             return {}
 

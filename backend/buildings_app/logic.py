@@ -171,18 +171,34 @@ class ConsensusManager:
     def sync_soda_reports(self, building: Building, soda_reports: List[Dict[str, Any]]):
         """
         Synchronizes official SODA reports into our local database.
+
+        SODA returns ``date_entered`` in MM/DD/YYYY format; we parse it
+        before saving so Django's DateTimeField doesn't reject it.
         """
+        from datetime import datetime
+
         for report in soda_reports:
-            status = "DOWN"
             unique_key = report.get("unique_key")
+
+            raw_date = report.get("date_entered")
+            if raw_date:
+                try:
+                    reported_at = datetime.strptime(raw_date, "%m/%d/%Y").replace(
+                        tzinfo=timezone.get_current_timezone()
+                    )
+                except ValueError:
+                    # Fall back gracefully if the format ever changes.
+                    reported_at = timezone.now()
+            else:
+                reported_at = timezone.now()
 
             ElevatorReport.objects.get_or_create(
                 soda_unique_key=unique_key,
                 defaults={
                     "building": building,
                     "user": None,
-                    "status": status,
+                    "status": "DOWN",
                     "is_official": True,
-                    "reported_at": report.get("date_entered", timezone.now()),
+                    "reported_at": reported_at,
                 },
             )
