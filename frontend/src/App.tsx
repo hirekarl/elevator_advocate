@@ -163,14 +163,15 @@ function MainDashboard() {
         {t('skip_to_main')}
       </a>
 
-      <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm sticky-top py-2 py-lg-3" aria-label={t('guide_modal_label')}>
+      <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top py-2 py-lg-3 app-navbar" aria-label={t('guide_modal_label')}>
         <Container>
           <Navbar.Brand
             as={Link}
             to="/"
-            className="fw-bold text-uppercase d-flex align-items-center fs-5 fs-md-4"
+            className="d-flex align-items-center gap-2"
           >
-            <span className="text-primary me-2" aria-hidden="true">🏢</span> Elevator Advocacy
+            <span className="brand-mark" aria-hidden="true">▲</span>
+            ELEVATOR ADVOCACY
           </Navbar.Brand>
           <div className="d-flex align-items-center ms-auto">
             <Button
@@ -268,27 +269,29 @@ function MainDashboard() {
 
       <main id="main-content">
         {!bin ? (
-          <div className="container mt-3 mt-md-5 pb-5 px-3">
+          <>
             <HeroSearch
               onSearch={handleSearch}
               searchData={searchData}
               setSearchData={setSearchData}
               isPending={isPending}
             />
-            {searchError && (
-              <Alert variant="danger" className="mt-2" role="alert">
-                {searchError}
-              </Alert>
-            )}
-            <Row className="mt-4 mt-md-5">
-              <Col md={12} lg={10} className="mx-auto text-center mb-5">
-                <h2 className="fw-bold mb-4 px-3 fs-3 fs-md-2">{t('explore_outages')}</h2>
-                <div className="px-1 px-md-2">
-                  <BuildingsMap onBuildingSelect={(binId) => navigate(`/building/${binId}`)} />
-                </div>
-              </Col>
-            </Row>
-          </div>
+            <div className="container pb-5 px-3">
+              {searchError && (
+                <Alert variant="danger" className="mt-3" role="alert">
+                  {searchError}
+                </Alert>
+              )}
+              <Row className="mt-4 mt-md-5">
+                <Col md={12} lg={10} className="mx-auto text-center mb-5">
+                  <h2 className="fw-bold mb-4 px-3 fs-3 fs-md-2">{t('explore_outages')}</h2>
+                  <div className="px-1 px-md-2">
+                    <BuildingsMap onBuildingSelect={(binId) => navigate(`/building/${binId}`)} />
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </>
         ) : (
           <Container className="mt-3 mt-md-4 pb-5 px-3">
             <Button

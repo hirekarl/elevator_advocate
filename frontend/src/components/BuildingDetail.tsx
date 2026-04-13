@@ -183,6 +183,12 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
     }
   };
 
+  const getStatusRibbonClass = (status: string): string => {
+    if (['DOWN', 'TRAPPED', 'UNSAFE'].includes(status)) return 'ribbon-danger';
+    if (['UNVERIFIED', 'SLOW'].includes(status)) return 'ribbon-warning';
+    return 'ribbon-success';
+  };
+
   const getStatusLabel = (status: string): string => {
     const labels: Record<string, string> = {
       DOWN: t('status_label_down'),
@@ -266,24 +272,23 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
       {/* Martha Mode: Emergency block — shown first when elevator is critically impacted */}
       {(['DOWN', 'TRAPPED', 'UNSAFE'] as string[]).includes(buildingData.verified_status) && (
         <div
-          className="bg-danger text-white p-4 mb-4 rounded-4 shadow"
+          className="emergency-block mb-4 fade-in-up"
           role="alert"
           aria-live="assertive"
           aria-atomic="true"
         >
-          <h2 className="fw-bold fs-3 mb-1">{getStatusLabel(buildingData.verified_status)}</h2>
+          <h2 className="mb-1">{getStatusLabel(buildingData.verified_status)}</h2>
           <p className="mb-3 fw-normal fs-6">{t('emergency_help_desc')}</p>
           <a
             href="tel:311"
-            className="d-block btn btn-light btn-lg fw-bold rounded-pill w-100 mb-3 shadow text-danger py-3 fs-5"
+            className="emergency-call-btn"
             aria-label={`${t('call_311_now')} — ${t('call_311_number')}`}
           >
             <span className="me-2" aria-hidden="true">📞</span>{t('call_311_now')} — {t('call_311_number')}
           </a>
           <a
             href={`sms:?body=${encodeURIComponent(`${buildingData.address}: ${t('alert_neighbor_sms_body')}`)}`}
-            className="d-block btn btn-light fw-bold rounded-pill w-100 py-3 fs-6"
-            style={{ backgroundColor: '#f8f9fa', color: '#000', borderColor: '#f8f9fa' }}
+            className="emergency-sms-btn"
           >
             <span className="me-2" aria-hidden="true">💬</span>{t('alert_neighbor')}
           </a>
@@ -306,16 +311,16 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
       {/* ZONE 1: Identity & Live Status */}
       <Card className="border-0 shadow mb-4 overflow-hidden">
         <div
-          className={`bg-${getStatusVariant(buildingData.verified_status)} py-3 px-4 text-white fw-bold text-center`}
+          className={`status-ribbon ${getStatusRibbonClass(buildingData.verified_status)}`}
           role="status"
           aria-live="polite"
         >
-          <div className="fs-5">{getStatusLabel(buildingData.verified_status)}</div>
+          {getStatusLabel(buildingData.verified_status)}
         </div>
         <Card.Body className="p-4">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4 gap-3">
             <div>
-              <h2 id="building-address" className="fw-bold mb-1 text-primary fs-3 fs-md-2">{buildingData.address}</h2>
+              <h2 id="building-address" className="building-address-text mb-1 fs-3 fs-md-2">{buildingData.address}</h2>
               <p className="text-muted mb-0 small">{buildingData.borough} • BIN {buildingData.bin}</p>
             </div>
             {isLoggedIn && (
@@ -347,7 +352,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
           </div>
 
           <div className="p-3 bg-light rounded-4 border border-primary border-opacity-10 mb-2">
-            <h2 className="fw-bold mb-3 text-dark text-uppercase small" style={{ fontSize: '0.75rem' }}>{t('quick_report_title')}</h2>
+            <h2 className="section-label">{t('quick_report_title')}</h2>
             <Row className="g-2 align-items-stretch">
               <Col xs={4} className="d-flex">
                 <Button
@@ -397,7 +402,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
 
             {/* Emergency reports */}
             <div className="mt-3 pt-3 border-top border-danger border-opacity-25">
-              <h3 className="fw-bold small text-dark text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>
+              <h3 className="section-label mt-1">
                 <span aria-hidden="true">🚨</span> {t('emergency_reports')}
               </h3>
               <Row className="g-2">
@@ -451,10 +456,10 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
       {/* ZONE 2: Insights */}
       <Row className="g-3 mb-4">
         <Col xs={12} md={6}>
-          <div className="p-3 bg-white shadow-sm rounded-4 border h-100">
-            <h2 className="text-uppercase fw-bold text-muted small mb-3 fs-6">{t('loss_of_service')}</h2>
+          <div className={`p-3 bg-white shadow-sm rounded-4 border h-100 metric-card ${uptimePct != null ? (lossOfService! > 10 ? 'mc-warn' : 'mc-good') : 'mc-neutral'}`}>
+            <h2 className="section-label">{t('loss_of_service')}</h2>
             <div className="d-flex align-items-end mb-2">
-              <span className="display-6 fw-bold me-2 fs-2">
+              <span className="metric-value me-2">
                 {uptimePct != null ? `${uptimePct}%` : '—'}
               </span>
               <span className="text-muted mb-1 pb-1 small">{t('uptime_30d')}</span>
@@ -475,10 +480,10 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
           </div>
         </Col>
         <Col xs={12} md={6}>
-          <div className="p-3 bg-white shadow-sm rounded-4 border h-100">
-            <h2 className="text-uppercase fw-bold text-muted small mb-3 fs-6">{t('maintenance_forecast')}</h2>
+          <div className={`p-3 bg-white shadow-sm rounded-4 border h-100 metric-card ${riskScore != null ? (riskScore > 60 ? 'mc-danger' : riskScore > 30 ? 'mc-warn' : 'mc-good') : 'mc-neutral'}`}>
+            <h2 className="section-label">{t('maintenance_forecast')}</h2>
             <div className="d-flex align-items-end mb-2">
-              <span className="display-6 fw-bold me-2 fs-2">
+              <span className="metric-value me-2">
                 {riskScore != null ? `${riskScore}%` : '—'}
               </span>
               <span className="text-muted mb-1 pb-1 small">{t('risk_level')}</span>
@@ -526,19 +531,19 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
             ) : executiveSummary && (
               <Row className="g-4">
                 <Col md={6}>
-                  <h3 className="fw-bold text-uppercase small text-dark mb-2" style={{ fontSize: '0.75rem' }}>{t('historical_patterns_title')}</h3>
+                  <h3 className="section-label">{t('historical_patterns_title')}</h3>
                   <p className="small mb-0">{executiveSummary.historical_patterns}</p>
                 </Col>
                 <Col md={6}>
-                  <h3 className="fw-bold text-uppercase small text-dark mb-2" style={{ fontSize: '0.75rem' }}>{t('community_sentiment_title')}</h3>
+                  <h3 className="section-label">{t('community_sentiment_title')}</h3>
                   <p className="small mb-0">{executiveSummary.community_sentiment}</p>
                 </Col>
                 <Col md={6}>
-                  <h3 className="fw-bold text-uppercase small text-dark mb-2" style={{ fontSize: '0.75rem' }}>{t('legal_standing_title')}</h3>
+                  <h3 className="section-label">{t('legal_standing_title')}</h3>
                   <p className="small mb-0">{executiveSummary.legal_standing}</p>
                 </Col>
                 <Col md={6}>
-                  <h3 className="fw-bold text-uppercase small text-dark mb-2" style={{ fontSize: '0.75rem' }}>{t('recommended_action_title')}</h3>
+                  <h3 className="section-label">{t('recommended_action_title')}</h3>
                   <p className="small fw-bold text-primary mb-0">{executiveSummary.recommended_action}</p>
                 </Col>
                 <Col xs={12} className="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
@@ -575,7 +580,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
       </a>
 
       {/* AI Advocacy Script */}
-      <Card className="border-0 shadow-sm bg-primary text-white mb-4 overflow-hidden rounded-4">
+      <Card className="border-0 shadow-sm mb-4 overflow-hidden rounded-4 text-white" style={{ backgroundColor: '#0d1b2a' }}>
         <Card.Body className="p-4">
           {isLoadingScript ? (
             <div className="py-2 d-flex align-items-center gap-3">
@@ -589,7 +594,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
           ) : advocacyScript ? (
             <>
               <div className="d-flex justify-content-between align-items-start mb-3">
-                <h6 className="fw-bold text-info mb-0">{advocacyScript.headline}</h6>
+                <h6 className="fw-bold text-white mb-0">{advocacyScript.headline}</h6>
                 {isLoggedIn && (
                   <Button
                     variant="info"
@@ -647,7 +652,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
         <Card.Body className="px-4 pb-4">
           <Row className="g-4">
             <Col lg={12}>
-              <h3 className="fw-bold mb-3 text-primary small text-uppercase" style={{ fontSize: '0.75rem' }}>{t('my_personal_trail')}</h3>
+              <h3 className="section-label">{t('my_personal_trail')}</h3>
               {advocacyLogs.length > 0 ? (
                 <ListGroup variant="flush">
                   {advocacyLogs.map((log, idx) => (
@@ -671,7 +676,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
             </Col>
 
             <Col md={6}>
-              <h3 className="fw-bold mb-3 text-success small text-uppercase" style={{ fontSize: '0.75rem' }}>{t('community_reports')}</h3>
+              <h3 className="section-label">{t('community_reports')}</h3>
               <ListGroup variant="flush" className="border rounded bg-light p-2">
                 {tenantReports.length > 0 ? (
                   tenantReports.slice(0, 5).map((report, idx) => (
@@ -687,7 +692,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
             </Col>
 
             <Col md={6}>
-              <h3 className="fw-bold mb-3 small text-uppercase" style={{ fontSize: '0.75rem', color: '#055160' }}>{t('official_history')}</h3>
+              <h3 className="section-label">{t('official_history')}</h3>
               <ListGroup variant="flush" className="border rounded bg-light p-2">
                 {officialReports.length > 0 ? (
                   officialReports.slice(0, 5).map((report, idx) => (
