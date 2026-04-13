@@ -142,7 +142,11 @@ const resources = {
       "verification_neighbor_prompt": "One neighbor has reported this. Ask another neighbor to also tap a button — once two neighbors agree, the status becomes confirmed.",
       "btn_report_working": "Working",
       "btn_report_not_working": "Not Working",
-      "btn_report_slow": "Moving Slowly"
+      "btn_report_slow": "Moving Slowly",
+      "go_to_my_building": "Go to My Building",
+      "welcome_back": "Welcome back",
+      "your_home_building_prompt": "Your home building is set. Jump straight to your dashboard.",
+      "set_primary_prompt": "Search for your building above to start tracking elevator status and set it as your home."
     }
   },
   es: {
@@ -285,7 +289,11 @@ const resources = {
       "verification_neighbor_prompt": "Un vecino ha reportado esto. Pida a otro vecino que también toque un botón — cuando dos vecinos estén de acuerdo, el estado queda confirmado.",
       "btn_report_working": "Funciona",
       "btn_report_not_working": "No Funciona",
-      "btn_report_slow": "Funciona Lento"
+      "btn_report_slow": "Funciona Lento",
+      "go_to_my_building": "Ir a Mi Edificio",
+      "welcome_back": "Bienvenido",
+      "your_home_building_prompt": "Tu edificio principal está configurado. Ve directamente a tu panel.",
+      "set_primary_prompt": "Busca tu edificio arriba para comenzar a rastrear el estado del ascensor y establecerlo como tu hogar."
     }
   }
 };

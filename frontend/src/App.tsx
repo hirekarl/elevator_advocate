@@ -18,6 +18,7 @@ function MainDashboard() {
   const [reports, setReports] = useState<OptimisticReport[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  const [primaryBuildingBin, setPrimaryBuildingBin] = useState<string | null>(localStorage.getItem('primary_building_bin'));
   const [searchData, setSearchData] = useState({
     house_number: '',
     street: '',
@@ -50,6 +51,7 @@ function MainDashboard() {
     localStorage.removeItem('primary_building_bin');
     setIsLoggedIn(false);
     setUsername('');
+    setPrimaryBuildingBin(null);
     navigate('/');
   }, [navigate]);
 
@@ -71,6 +73,9 @@ function MainDashboard() {
               if (currentBinInStorage !== data.primary_building.bin) {
                 localStorage.setItem('primary_building_bin', data.primary_building.bin);
               }
+              setPrimaryBuildingBin(data.primary_building.bin);
+            } else {
+              setPrimaryBuildingBin(null);
             }
           } else if (response.status === 401) {
             handleLogout();
@@ -143,6 +148,7 @@ function MainDashboard() {
     setShowAuthModal(false);
     if (data.primary_building) {
       localStorage.setItem('primary_building_bin', data.primary_building.bin);
+      setPrimaryBuildingBin(data.primary_building.bin);
       navigate(`/building/${data.primary_building.bin}`);
     }
   };
@@ -279,6 +285,38 @@ function MainDashboard() {
                   {searchError}
                 </Alert>
               )}
+
+              {/* State C: logged in + primary building set */}
+              {isLoggedIn && primaryBuildingBin && (
+                <div
+                  className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mt-4 p-4 rounded-4 shadow-sm"
+                  style={{ backgroundColor: '#0d1b2a' }}
+                >
+                  <div>
+                    <div className="fw-bold text-white fs-5" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.03em' }}>
+                      {t('welcome_back')}, {username}
+                    </div>
+                    <div className="text-white mt-1" style={{ opacity: 0.72, fontSize: '0.9rem' }}>
+                      {t('your_home_building_prompt')}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => navigate(`/building/${primaryBuildingBin}`)}
+                    className="fw-bold rounded-pill px-4 py-2 flex-shrink-0"
+                    style={{ backgroundColor: '#e8920a', borderColor: '#e8920a', color: '#0d1b2a', fontFamily: 'Syne, sans-serif' }}
+                  >
+                    {t('go_to_my_building')} →
+                  </Button>
+                </div>
+              )}
+
+              {/* State B: logged in, no primary building */}
+              {isLoggedIn && !primaryBuildingBin && (
+                <Alert variant="info" className="mt-4 rounded-4 border-0 shadow-sm" style={{ backgroundColor: '#e8eef5', color: '#0d1b2a' }}>
+                  <strong>{t('welcome_back')}, {username}.</strong> {t('set_primary_prompt')}
+                </Alert>
+              )}
+
               <Row className="mt-4 mt-md-5">
                 <Col md={12} lg={10} className="mx-auto text-center mb-5">
                   <h2 className="fw-bold mb-4 px-3 fs-3 fs-md-2">{t('explore_outages')}</h2>
