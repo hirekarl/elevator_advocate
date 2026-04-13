@@ -10,9 +10,9 @@
   - `frontend/src/components/BuildingDetail.tsx`
 
 ## 2. Action Steps
-- [ ] **Phase 1: App.tsx Fix**
+- [x] **Phase 1: App.tsx Fix**
   - Move `handleLogout` and `fetchBuilding` declarations above the `useEffect` blocks that call them.
-- [ ] **Phase 2: BuildingDetail.tsx Fix**
+- [x] **Phase 2: BuildingDetail.tsx Fix**
   - Move `fetchAdvocacyScript` and `fetchExecutiveSummary` declarations above the `useEffect` block that calls them.
 - [ ] **Phase 3: Validation**
   - Run `cd frontend && npm run build` to verify TSC passes.

@@ -28,6 +28,31 @@ function MainDashboard() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
 
+  const fetchBuilding = useCallback((binId: string) => {
+    startTransition(async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/buildings/${binId}/`);
+        if (response.ok) {
+          const data = await response.json();
+          setActiveBuilding(data);
+        } else {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error("Fetch Error:", error);
+      }
+    });
+  }, [navigate, startTransition]);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('primary_building_bin');
+    setIsLoggedIn(false);
+    setUsername('');
+    navigate('/');
+  }, [navigate]);
+
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
@@ -81,31 +106,6 @@ function MainDashboard() {
       setReports([]);
     }
   }, [activeBuilding]);
-
-  const fetchBuilding = useCallback((binId: string) => {
-    startTransition(async () => {
-      try {
-        const response = await fetch(`http://localhost:8000/api/buildings/${binId}/`);
-        if (response.ok) {
-          const data = await response.json();
-          setActiveBuilding(data);
-        } else {
-          navigate('/');
-        }
-      } catch (error) {
-        console.error("Fetch Error:", error);
-      }
-    });
-  }, [navigate, startTransition]);
-
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('primary_building_bin');
-    setIsLoggedIn(false);
-    setUsername('');
-    navigate('/');
-  }, [navigate]);
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();

@@ -37,13 +37,6 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
     setShowToast(true);
   };
 
-  useEffect(() => {
-    if (buildingData?.bin) {
-      fetchAdvocacyScript();
-      fetchExecutiveSummary();
-    }
-  }, [buildingData?.bin, fetchAdvocacyScript, fetchExecutiveSummary]);
-
   const fetchAdvocacyScript = useCallback(async () => {
     setIsLoadingScript(true);
     try {
@@ -73,6 +66,13 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
       setIsLoadingSummary(false);
     }
   }, [buildingData.bin, i18n.language]);
+
+  useEffect(() => {
+    if (buildingData?.bin) {
+      fetchAdvocacyScript();
+      fetchExecutiveSummary();
+    }
+  }, [buildingData?.bin, fetchAdvocacyScript, fetchExecutiveSummary]);
 
   if (!buildingData) return null;
 
