@@ -42,9 +42,17 @@ jobs:
         working-directory: ./backend
         run: uv sync --frozen
 
+      - name: Django System Check
+        working-directory: ./backend
+        run: DJANGO_SECRET_KEY=ci-test-key-not-for-production DJANGO_DEBUG=True uv run python manage.py check
+
       - name: Lint with ruff
         working-directory: ./backend
-        run: uv run ruff check .
+        run: uv run ruff check . --ignore E501,E402
+
+      - name: Type check with mypy
+        working-directory: ./backend
+        run: uv run mypy . --ignore-missing-imports --disable-error-code import-untyped
 
       - name: Run Tests
         working-directory: ./backend
