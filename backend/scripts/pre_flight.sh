@@ -18,7 +18,7 @@ echo "--- 🛠️ Starting Pre-Flight Validation ---"
 
 echo "Step 1: Running Ruff (Format & Lint)..."
 
-uv run ruff format .
+uv run ruff format . --quiet
 
 uv run ruff check . --fix --ignore E501,E402
 
@@ -28,7 +28,7 @@ uv run ruff check . --fix --ignore E501,E402
 
 echo "Step 2: Running Mypy..."
 
-uv run mypy . --ignore-missing-imports --disable-error-code import-untyped
+uv run mypy . --ignore-missing-imports --disable-error-code import-untyped --no-error-summary
 
 
 

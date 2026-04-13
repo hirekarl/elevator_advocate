@@ -60,6 +60,7 @@ jobs:
           DATABASE_URL: postgres://user:password@localhost:5432/elevator_db_test
           DJANGO_SECRET_KEY: ci-test-key-not-for-production
           DJANGO_DEBUG: "False"
+          SECURE_SSL_REDIRECT: "False"
           USE_MOCK_GEOCLIENT: "True"
           USE_MOCK_SERPAPI: "True"
         run: uv run pytest

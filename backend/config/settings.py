@@ -41,8 +41,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:5173").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(
+    ","
+)
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:5173").split(
+    ","
+)
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -131,7 +135,7 @@ WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "True") == "True"
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -139,17 +143,10 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 # Django 6.0 Tasks Framework
-# Using ImmediateBackend for local dev, DatabaseBackend for production (with worker)
-if DEBUG:
-    TASKS = {
-        "default": {
-            "BACKEND": "django.tasks.backends.immediate.ImmediateBackend",
-        },
-    }
-else:
-    # Requires python manage.py runworker in production
-    TASKS = {
-        "default": {
-            "BACKEND": "django.tasks.backends.db.DatabaseBackend",
-        },
-    }
+# ImmediateBackend is the only backend shipped with Django 6.0.
+# DatabaseBackend is planned for a future Django release.
+TASKS = {
+    "default": {
+        "BACKEND": "django.tasks.backends.immediate.ImmediateBackend",
+    },
+}
