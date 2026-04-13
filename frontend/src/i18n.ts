@@ -117,7 +117,18 @@ const resources = {
       "save_history": "Save to My History",
       "saving": "Saving...",
       "sr_number_label": "Service Request (SR) Number",
-      "notes_label": "Notes (Optional)"
+      "notes_label": "Notes (Optional)",
+      "skip_to_main": "Skip to main content",
+      "report_status_success": "Status reported!",
+      "complaint_logged": "Complaint logged to your paper trail!",
+      "script_copied": "Script copied to clipboard!",
+      "summary_copied": "Summary copied for sharing!",
+      "copy_summary": "Copy Summary",
+      "news_sync_started": "News sync started!",
+      "error_syncing_news": "Error syncing news.",
+      "error_sending_report": "Error sending report.",
+      "auth_modal_label": "Sign in or create account",
+      "guide_modal_label": "How to use Elevator Advocacy"
     }
   },
   es: {
@@ -235,7 +246,18 @@ const resources = {
       "save_history": "Guardar en Mi Historial",
       "saving": "Guardando...",
       "sr_number_label": "Número de Solicitud de Servicio (SR)",
-      "notes_label": "Notas (Opcional)"
+      "notes_label": "Notas (Opcional)",
+      "skip_to_main": "Ir al contenido principal",
+      "report_status_success": "¡Estado reportado!",
+      "complaint_logged": "¡Queja registrada en su historial!",
+      "script_copied": "¡Guion copiado al portapapeles!",
+      "summary_copied": "¡Resumen copiado para compartir!",
+      "copy_summary": "Copiar Resumen",
+      "news_sync_started": "¡Sincronización de noticias iniciada!",
+      "error_syncing_news": "Error al sincronizar noticias.",
+      "error_sending_report": "Error al enviar el reporte.",
+      "auth_modal_label": "Iniciar sesión o crear cuenta",
+      "guide_modal_label": "Cómo usar Elevator Advocacy"
     }
   }
 };

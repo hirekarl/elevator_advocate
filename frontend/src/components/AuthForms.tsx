@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Form, Button, Alert, Card } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 
+import type { AuthSuccessData } from '../types';
+
 interface AuthFormsProps {
-  onSuccess: (data: any) => void;
+  onSuccess: (data: AuthSuccessData) => void;
 }
 
 export function SignupForm({ onSuccess }: AuthFormsProps) {
@@ -59,7 +61,7 @@ export function SignupForm({ onSuccess }: AuthFormsProps) {
           localStorage.setItem('primary_building_bin', data.primary_building.bin);
         }
         setStatus({ type: 'success', message: t('signin_success') });
-        onSuccess(data);
+        onSuccess(data as AuthSuccessData);
       } else {
         setStatus({ type: 'danger', message: data.error || t('login_failed') });
       }
