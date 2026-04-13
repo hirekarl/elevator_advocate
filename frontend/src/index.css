@@ -173,6 +173,20 @@ h1, h2, h3, h4, h5, h6,
   color: #6a3d00 !important;
 }
 
+/* === AMBER BUTTON ====================================== */
+.btn-amber {
+  background-color: var(--c-amber) !important;
+  border-color: var(--c-amber) !important;
+  color: var(--c-navy) !important;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+}
+.btn-amber:hover, .btn-amber:focus {
+  background-color: var(--c-amber-dk) !important;
+  border-color: var(--c-amber-dk) !important;
+  color: var(--c-navy) !important;
+}
+
 /* === HERO SECTION ====================================== */
 .hero-section {
   background: linear-gradient(150deg, #0d1b2a 0%, #1a3352 55%, #0d2440 100%);

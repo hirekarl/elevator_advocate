@@ -328,7 +328,7 @@ function MainDashboard() {
                       {t('welcome_back')}, {username}
                     </div>
                     <div className="d-flex align-items-center gap-2 mt-2">
-                      {primaryBuildingStatus ? (
+                      {primaryBuildingStatus && (
                         <span
                           className="px-2 py-1 rounded-pill fw-bold"
                           style={{
@@ -341,8 +341,6 @@ function MainDashboard() {
                         >
                           {getStatusShortLabel(primaryBuildingStatus)}
                         </span>
-                      ) : (
-                        <span style={{ opacity: 0.4, fontSize: '0.8rem', color: '#fff' }}>—</span>
                       )}
                       <span className="text-white" style={{ opacity: 0.6, fontSize: '0.85rem' }}>
                         {t('your_home_building_prompt')}
@@ -351,8 +349,7 @@ function MainDashboard() {
                   </div>
                   <Button
                     onClick={() => navigate(`/building/${primaryBuildingBin}`)}
-                    className="fw-bold rounded-pill px-4 py-2 flex-shrink-0"
-                    style={{ backgroundColor: '#e8920a', borderColor: '#e8920a', color: '#0d1b2a', fontFamily: 'Syne, sans-serif' }}
+                    className="btn-amber rounded-pill px-4 py-2 flex-shrink-0"
                   >
                     {t('go_to_my_building')} →
                   </Button>
