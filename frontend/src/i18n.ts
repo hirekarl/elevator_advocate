@@ -152,7 +152,11 @@ const resources = {
       "status_short_trapped": "Emergency",
       "status_short_unsafe": "Unsafe",
       "status_short_slow": "Slow",
-      "status_short_unverified": "Unverified"
+      "status_short_unverified": "Unverified",
+      "alert_family": "Tell my family",
+      "alert_family_sms_body": "The elevator is down and I cannot use the stairs. Can you come or call me?",
+      "script_label_emergency": "What to tell 311 when you call",
+      "script_label_standard": "Talking points for your advocate"
     }
   },
   es: {
@@ -305,7 +309,11 @@ const resources = {
       "status_short_trapped": "Emergencia",
       "status_short_unsafe": "Inseguro",
       "status_short_slow": "Lento",
-      "status_short_unverified": "Sin Verificar"
+      "status_short_unverified": "Sin Verificar",
+      "alert_family": "Avisar a mi familia",
+      "alert_family_sms_body": "El ascensor está fuera de servicio y no puedo usar las escaleras. ¿Puedes venir o llamarme?",
+      "script_label_emergency": "Qué decirle al 311 cuando llames",
+      "script_label_standard": "Puntos de conversación para tu defensor"
     }
   }
 };

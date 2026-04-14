@@ -172,6 +172,37 @@ h1, h2, h3, h4, h5, h6,
   border-color: rgba(232, 146, 10, 0.4) !important;
   color: #6a3d00 !important;
 }
+.alert-info {
+  background-color: #e8eef5 !important;
+  border-color: rgba(42, 74, 110, 0.15) !important;
+  color: var(--c-navy) !important;
+}
+
+/* === HOME BUILDING BANNER ============================== */
+.home-building-banner {
+  background-color: var(--c-navy);
+}
+
+.home-building-title {
+  font-family: 'Syne', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.home-building-subtitle {
+  opacity: 0.6;
+  font-size: 0.85rem;
+}
+
+.home-status-pill {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.home-status-pill.pill-danger  { background-color: var(--c-red);   color: #fff; }
+.home-status-pill.pill-warning { background-color: var(--c-amber); color: var(--c-navy); }
+.home-status-pill.pill-ok      { background-color: var(--c-green); color: #fff; }
 
 /* === AMBER BUTTON ====================================== */
 .btn-amber {

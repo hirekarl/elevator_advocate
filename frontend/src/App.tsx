@@ -151,10 +151,10 @@ function MainDashboard() {
     (state: OptimisticReport[], newReport: OptimisticReport) => [{ ...newReport, pending: true }, ...state]
   );
 
-  const getStatusBadgeStyle = (status: string): { bg: string; color: string } => {
-    if (['DOWN', 'TRAPPED', 'UNSAFE'].includes(status)) return { bg: '#c8281c', color: '#fff' };
-    if (['SLOW', 'UNVERIFIED'].includes(status)) return { bg: '#e8920a', color: '#0d1b2a' };
-    return { bg: '#1a7a4a', color: '#fff' };
+  const getStatusPillClass = (status: string): string => {
+    if (['DOWN', 'TRAPPED', 'UNSAFE'].includes(status)) return 'pill-danger';
+    if (['SLOW', 'UNVERIFIED'].includes(status)) return 'pill-warning';
+    return 'pill-ok';
   };
 
   const getStatusShortLabel = (status: string): string => {
@@ -319,30 +319,18 @@ function MainDashboard() {
 
               {/* State C: logged in + primary building set */}
               {isLoggedIn && primaryBuildingBin && (
-                <div
-                  className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mt-4 p-4 rounded-4 shadow-sm"
-                  style={{ backgroundColor: '#0d1b2a' }}
-                >
+                <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mt-4 p-4 rounded-4 shadow-sm home-building-banner">
                   <div>
-                    <div className="fw-bold text-white fs-5" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.03em' }}>
+                    <div className="fw-bold text-white fs-5 home-building-title">
                       {t('welcome_back')}, {username}
                     </div>
                     <div className="d-flex align-items-center gap-2 mt-2">
                       {primaryBuildingStatus && (
-                        <span
-                          className="px-2 py-1 rounded-pill fw-bold"
-                          style={{
-                            ...getStatusBadgeStyle(primaryBuildingStatus),
-                            fontSize: '0.72rem',
-                            fontFamily: 'Syne, sans-serif',
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                          }}
-                        >
+                        <span className={`px-2 py-1 rounded-pill home-status-pill ${getStatusPillClass(primaryBuildingStatus)}`}>
                           {getStatusShortLabel(primaryBuildingStatus)}
                         </span>
                       )}
-                      <span className="text-white" style={{ opacity: 0.6, fontSize: '0.85rem' }}>
+                      <span className="text-white home-building-subtitle">
                         {t('your_home_building_prompt')}
                       </span>
                     </div>
@@ -358,7 +346,7 @@ function MainDashboard() {
 
               {/* State B: logged in, no primary building */}
               {isLoggedIn && !primaryBuildingBin && (
-                <Alert variant="info" className="mt-4 rounded-4 border-0 shadow-sm" style={{ backgroundColor: '#e8eef5', color: '#0d1b2a' }}>
+                <Alert variant="info" className="mt-4 rounded-4 border-0 shadow-sm">
                   <strong>{t('welcome_back')}, {username}.</strong> {t('set_primary_prompt')}
                 </Alert>
               )}

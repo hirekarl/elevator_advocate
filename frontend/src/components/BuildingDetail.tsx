@@ -193,6 +193,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
   const lossOfService = buildingData.loss_of_service_30d;
   const uptimePct = lossOfService != null ? 100 - lossOfService : null;
   const riskScore = buildingData.failure_risk?.risk_score ?? null;
+  const isEmergency = (['DOWN', 'TRAPPED', 'UNSAFE'] as string[]).includes(buildingData.verified_status);
 
   return (
     <div className="building-action-center pb-safe">
@@ -259,7 +260,7 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
       </ToastContainer>
 
       {/* Martha Mode: Emergency block — shown first when elevator is critically impacted */}
-      {(['DOWN', 'TRAPPED', 'UNSAFE'] as string[]).includes(buildingData.verified_status) && (
+      {isEmergency && (
         <div
           className="emergency-block mb-4 fade-in-up"
           role="alert"
@@ -280,6 +281,12 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
             className="emergency-sms-btn"
           >
             <span className="me-2" aria-hidden="true">💬</span>{t('alert_neighbor')}
+          </a>
+          <a
+            href={`sms:?body=${encodeURIComponent(`${buildingData.address}: ${t('alert_family_sms_body')}`)}`}
+            className="emergency-sms-btn"
+          >
+            <span className="me-2" aria-hidden="true">🏠</span>{t('alert_family')}
           </a>
         </div>
       )}
@@ -414,7 +421,6 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
                     aria-label={t('status_unsafe')}
                     className="w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2"
                     onClick={() => handleReport('UNSAFE')}
-                    style={{ backgroundColor: '#dc3545', color: '#fff', borderColor: '#dc3545' }}
                   >
                     <span aria-hidden="true">⚠️</span>
                     <span>{t('status_unsafe_label')}</span>
@@ -442,8 +448,11 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
         </Card.Body>
       </Card>
 
-      {/* ZONE 2: Insights */}
-      <Row className="g-3 mb-4">
+      {/* In emergency states, analytics render after the advocacy tools below */}
+      {!isEmergency && (
+        <>
+        {/* ZONE 2: Insights */}
+        <Row className="g-3 mb-4">
         <Col xs={12} md={6}>
           <div className={`p-3 bg-white shadow-sm rounded-4 border h-100 metric-card ${uptimePct != null ? (lossOfService! > 10 ? 'mc-warn' : 'mc-good') : 'mc-neutral'}`}>
             <h2 className="section-label">{t('loss_of_service')}</h2>
@@ -546,30 +555,34 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
           </Card.Body>
         </Card>
       )}
+        </>
+      )}
 
       {/* ZONE 3: Advocacy Center */}
       <h2 className="fw-bold mb-3 mt-5 d-flex align-items-center fs-4">
         <span className="me-2" aria-hidden="true">📢</span> {t('advocacy_center')}
       </h2>
 
-      {/* Call 311 Now */}
-      <a
-        href="tel:311"
-        className="d-flex align-items-center justify-content-between p-3 mb-3 bg-danger text-white rounded-4 text-decoration-none fw-bold shadow-sm"
-        aria-label={`${t('call_311_now')} — ${t('call_311_number')}`}
-      >
-        <div>
-          <div className="fs-6"><span aria-hidden="true">📞</span> {t('call_311_now')}</div>
-          <small className="fw-normal">{t('call_311_desc')}</small>
-        </div>
-        <div className="text-end">
-          <div className="fw-bold">{t('call_311_number')}</div>
-          <small className="fw-normal">{t('or_dial_311')}</small>
-        </div>
-      </a>
+      {/* 311 call — only in non-emergency (emergency block handles it above) */}
+      {!isEmergency && (
+        <a
+          href="tel:311"
+          className="d-flex align-items-center justify-content-between p-3 mb-3 bg-danger text-white rounded-4 text-decoration-none fw-bold shadow-sm"
+          aria-label={`${t('call_311_now')} — ${t('call_311_number')}`}
+        >
+          <div>
+            <div className="fs-6"><span aria-hidden="true">📞</span> {t('call_311_now')}</div>
+            <small className="fw-normal">{t('call_311_desc')}</small>
+          </div>
+          <div className="text-end">
+            <div className="fw-bold">{t('call_311_number')}</div>
+            <small className="fw-normal">{t('or_dial_311')}</small>
+          </div>
+        </a>
+      )}
 
       {/* AI Advocacy Script */}
-      <Card className="border-0 shadow-sm mb-4 overflow-hidden rounded-4 text-white" style={{ backgroundColor: '#0d1b2a' }}>
+      <Card className="border-0 shadow-sm mb-4 overflow-hidden rounded-4 text-white script-card">
         <Card.Body className="p-4">
           {isLoadingScript ? (
             <div className="py-2 d-flex align-items-center gap-3">
@@ -583,6 +596,9 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
           ) : advocacyScript ? (
             <>
               <div className="d-flex justify-content-between align-items-start mb-3">
+                <p className="mb-1 fw-semibold text-white" style={{ opacity: 0.55, fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  {isEmergency ? t('script_label_emergency') : t('script_label_standard')}
+                </p>
                 <h3 className="fw-bold text-white mb-0 fs-6">{advocacyScript.headline}</h3>
                 {isLoggedIn && (
                   <Button
@@ -621,13 +637,123 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
         </Card.Body>
       </Card>
 
+      {/* Analytics — deferred below advocacy tools in emergency states */}
+      {isEmergency && (
+        <>
+          {/* Zone 2: Metrics */}
+          <Row className="g-3 mb-4">
+            <Col xs={12} md={6}>
+              <div className={`p-3 bg-white shadow-sm rounded-4 border h-100 metric-card ${uptimePct != null ? (lossOfService! > 10 ? 'mc-warn' : 'mc-good') : 'mc-neutral'}`}>
+                <h2 className="section-label">{t('loss_of_service')}</h2>
+                <div className="d-flex align-items-end mb-2">
+                  <span className="metric-value me-2">
+                    {uptimePct != null ? `${uptimePct}%` : '—'}
+                  </span>
+                  <span className="text-muted mb-1 pb-1 small">{t('uptime_30d')}</span>
+                </div>
+                {uptimePct != null && (
+                  <div className="progress" style={{ height: '8px' }}>
+                    <div
+                      className={`progress-bar bg-${lossOfService! > 10 ? 'warning' : 'success'}`}
+                      role="progressbar"
+                      style={{ width: `${uptimePct}%` }}
+                      aria-valuenow={uptimePct}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-labelledby="building-address"
+                    ></div>
+                  </div>
+                )}
+              </div>
+            </Col>
+            <Col xs={12} md={6}>
+              <div className={`p-3 bg-white shadow-sm rounded-4 border h-100 metric-card ${riskScore != null ? (riskScore > 60 ? 'mc-danger' : riskScore > 30 ? 'mc-warn' : 'mc-good') : 'mc-neutral'}`}>
+                <h2 className="section-label">{t('maintenance_forecast')}</h2>
+                <div className="d-flex align-items-end mb-2">
+                  <span className="metric-value me-2">
+                    {riskScore != null ? `${riskScore}%` : '—'}
+                  </span>
+                  <span className="text-muted mb-1 pb-1 small">{t('risk_level')}</span>
+                </div>
+                {riskScore != null && (
+                  <div className="progress" style={{ height: '8px' }}>
+                    <div
+                      className={`progress-bar bg-${riskScore > 60 ? 'danger' : 'warning'}`}
+                      role="progressbar"
+                      style={{ width: `${riskScore}%` }}
+                      aria-valuenow={riskScore}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-labelledby="building-address"
+                    ></div>
+                  </div>
+                )}
+              </div>
+            </Col>
+          </Row>
+
+          {/* Zone 2.5: AI Executive Summary */}
+          {(isLoadingSummary || executiveSummary) && (
+            <Card className="border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-primary border-5">
+              <Card.Header className="bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h2 className="fw-bold mb-0 fs-5">
+                  <span className="me-2" aria-hidden="true">🧠</span> {t('executive_summary_title')}
+                </h2>
+                {executiveSummary && (
+                  <Badge bg={executiveSummary.risk_level === 'Critical' ? 'danger' : 'warning'} className="px-3 py-2 rounded-pill">
+                    {t('risk_level_label')}: {executiveSummary.risk_level}
+                  </Badge>
+                )}
+              </Card.Header>
+              <Card.Body className="px-4 pb-4">
+                {isLoadingSummary ? (
+                  <div className="py-4 text-center">
+                    <div
+                      className="spinner-border text-primary mb-2"
+                      role="status"
+                      aria-label={t('generating_summary')}
+                    />
+                    <p className="text-dark small mb-0 fw-bold" aria-hidden="true">{t('generating_summary')}</p>
+                  </div>
+                ) : executiveSummary && (
+                  <Row className="g-4">
+                    <Col md={6}>
+                      <h3 className="section-label">{t('historical_patterns_title')}</h3>
+                      <p className="small mb-0">{executiveSummary.historical_patterns}</p>
+                    </Col>
+                    <Col md={6}>
+                      <h3 className="section-label">{t('community_sentiment_title')}</h3>
+                      <p className="small mb-0">{executiveSummary.community_sentiment}</p>
+                    </Col>
+                    <Col md={6}>
+                      <h3 className="section-label">{t('legal_standing_title')}</h3>
+                      <p className="small mb-0">{executiveSummary.legal_standing}</p>
+                    </Col>
+                    <Col md={6}>
+                      <h3 className="section-label">{t('recommended_action_title')}</h3>
+                      <p className="small fw-bold text-primary mb-0">{executiveSummary.recommended_action}</p>
+                    </Col>
+                    <Col xs={12} className="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                      <small className="text-muted">{t('confidence_label')}: {(executiveSummary.confidence_score * 100).toFixed(0)}%</small>
+                      <Button variant="link" size="sm" className="p-0 text-decoration-none small" onClick={fetchExecutiveSummary}>
+                        <span aria-hidden="true">🔄</span> {t('refresh_analysis')}
+                      </Button>
+                    </Col>
+                  </Row>
+                )}
+              </Card.Body>
+            </Card>
+          )}
+        </>
+      )}
+
       {/* ZONE 4: Advocacy Paper Trail */}
       <Card className="border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
         <Card.Header className="bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
           <h2 className="fw-bold mb-0 fs-5">
             <span className="me-2" aria-hidden="true">📜</span> {t('paper_trail_title')}
           </h2>
-          {isLoggedIn && (
+          {isLoggedIn && !isEmergency && (
             <Button
               variant="primary"
               size="sm"
