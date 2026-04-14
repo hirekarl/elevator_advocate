@@ -4,7 +4,7 @@ services:
     name: elevator-advocate-api
     env: python
     buildCommand: "./render_build.sh"
-    startCommand: "uv run --directory backend gunicorn config.wsgi"
+    startCommand: "backend/.venv/bin/gunicorn --chdir backend config.wsgi"
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
@@ -37,7 +37,7 @@ services:
     name: elevator-advocate-worker
     env: python
     buildCommand: "./render_build.sh"
-    startCommand: "uv run --directory backend python manage.py runworker"
+    startCommand: "backend/.venv/bin/python backend/manage.py runworker"
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
