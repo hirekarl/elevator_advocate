@@ -324,50 +324,15 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet[Building]):
     )
     def refresh_news(self, request, bin=None):
         """
-        Manually triggers the news extraction task for this building.
-        Requires authentication and enforces a 24-hour cooldown per building.
+        News is refreshed automatically on the 1st and 15th of each month
+        via a Render cron job. On-demand refresh is disabled to protect the
+        SerpAPI quota (250 searches/month).
         """
-        from datetime import timedelta
-
-        from django.utils import timezone
-
         building = self.get_object()
-        now = timezone.now()
-
-        # Enforce 24-hour cooldown
-        if building.last_news_refresh and (
-            now - building.last_news_refresh
-        ) < timedelta(hours=24):
-            remaining_seconds = int(
-                (
-                    timedelta(hours=24) - (now - building.last_news_refresh)
-                ).total_seconds()
-            )
-            remaining_hours = remaining_seconds // 3600
-            remaining_minutes = (remaining_seconds % 3600) // 60
-
-            return Response(
-                {
-                    "error": "Cooldown in effect.",
-                    "message": f"News can only be refreshed once every 24 hours. Please try again in {remaining_hours}h {remaining_minutes}m.",
-                    "cooldown_remaining": remaining_seconds,
-                },
-                status=status.HTTP_429_TOO_MANY_REQUESTS,
-            )
-
-        from .tasks import fetch_building_news
-
-        # Update last refresh timestamp immediately to prevent race conditions
-        building.last_news_refresh = now
-        building.save(update_fields=["last_news_refresh"])
-
-        # Enqueue the task using Django 6.0 Task Framework
-        fetch_building_news.enqueue(bin=building.bin)
-
         return Response(
             {
-                "message": f"News refresh for {building.address} has been queued.",
-                "status": "QUEUED",
+                "message": f"News for {building.address} refreshes automatically on the 1st and 15th of each month.",
+                "status": "SCHEDULED",
             }
         )
 

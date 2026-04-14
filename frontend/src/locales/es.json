@@ -119,7 +119,7 @@
   "script_copied": "¡Guion copiado al portapapeles!",
   "summary_copied": "¡Resumen copiado para compartir!",
   "copy_summary": "Copiar Resumen",
-  "news_sync_started": "¡Sincronización de noticias iniciada!",
+  "news_sync_started": "Las noticias se actualizan automáticamente el 1 y el 15 de cada mes.",
   "error_syncing_news": "Error al sincronizar noticias.",
   "error_sending_report": "Error al enviar el reporte.",
   "auth_modal_label": "Iniciar sesión o crear cuenta",

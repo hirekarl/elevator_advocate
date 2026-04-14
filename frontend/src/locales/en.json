@@ -119,7 +119,7 @@
   "script_copied": "Script copied to clipboard!",
   "summary_copied": "Summary copied for sharing!",
   "copy_summary": "Copy Summary",
-  "news_sync_started": "News sync started!",
+  "news_sync_started": "News refreshes automatically on the 1st and 15th of each month.",
   "error_syncing_news": "Error syncing news.",
   "error_sending_report": "Error sending report.",
   "auth_modal_label": "Sign in or create account",
