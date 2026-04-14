@@ -31,6 +31,10 @@ fi
 echo "Loading NYC Council district fixture..."
 uv run python manage.py loaddata council_districts
 
+# Backfill council district data for buildings created via GeoSearch fallback
+echo "Backfilling council district data..."
+uv run python manage.py backfill_council_districts
+
 # Pre-generate and cache Executive Advocacy Summaries
 echo "Generating advocacy summaries..."
 uv run python manage.py generate_summaries
