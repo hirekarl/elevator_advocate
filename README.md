@@ -1,65 +1,24 @@
 # NYC Tenant Elevator Advocacy Platform
+## "Dignity Through Data"
 
-I am building this platform to empower NYC tenants with the data and tools they need to address elevator mismanagement. By cross-referencing real-time tenant reports with official NYC Department of Buildings (DOB) records, I provide a clear, quantified view of building maintenance performance and a guided workflow for advocacy.
+Hi, I’m **Karl Johnson**, a resident of District 17 in the Bronx. I am building this platform as a gift of service to my community—born from the daily reality of watching my neighbors, many of whom are seniors or rely on wheelchairs, rendered immobile and oppressed by failing elevators.
 
-## Core Mission
-I aim to close the information gap between residents and property owners. This tool provides:
-- **Verified Transparency**: Tenant reports require multi-user consensus within a specific time window to ensure data integrity.
-- **Quantified Advocacy**: I calculate a "Loss of Service" metric to help tenants present hard data in housing court or to the media.
-- **Automated Intelligence**: A custom multi-agent system analyzes building history and suggests specific legal or community organizing steps.
+In my building, elevator outages aren't just maintenance issues; they are a crisis of mobility and human dignity. I’ve seen neighbors confined to their floors for days, weeks, and even months. This project, developed during my AI-Native fellowship at **Pursuit**, is my response to that anguish. It is a tool designed to transform personal grievance into a scalable engine for collective advocacy and survival.
 
-## Tech Stack
-I selected these technologies to ensure a decoupled, performant, and type-safe environment:
-- **Backend**: Django 6.0, Django REST Framework, PostgreSQL.
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS.
-- **Package Management**: `uv` for Python, `npm` for JavaScript.
-- **Type Safety**: `django-stubs` with `django-stubs-ext` for full generic support in Django 6.0.
-- **Orchestration**: Custom Python-based multi-agent system using Gemini 2.5 Flash.
+---
 
-## Getting Started
+## ✊ The Mission
+The goal is simple: **Close the information gap between residents and property owners.** 
 
-### Prerequisites
-- Python 3.12+ 
-- `uv` (Installed via `curl -LsSf https://astral.sh/uv/install.sh`)
-- Node.js 20+
+Currently, the city's 311 reporting system is high-friction, and official NYC Open Data (SODA) records often suffer from reporting lags that make them unusable for life-safety decisions. This platform restores dignity to residents by providing:
 
-### Backend Setup
-1. Navigate to the backend directory: `cd backend`
-2. Create and sync the environment: `uv sync`
-3. Set up your environment variables: `cp .env.example .env` (Add your NYC Open Data, SerpAPI, and Gemini API keys).
-4. Run migrations: `uv run python manage.py migrate`
-5. Start the server: `uv run python manage.py runserver`
-6. **Validation**: Run `./scripts/pre_flight.sh` to ensure Ruff, Mypy, and Pytest are all passing.
+- **Verified Transparency**: Outages are "Verified" only when multiple residents report them within a rolling 2-hour window, creating an undeniable record of truth.
+- **Quantified Advocacy**: We calculate a unique **"Loss of Service" (LoS) %** metric—translating raw downtime into hard data that can be used in Housing Court or legislative briefings.
+- **Strategic Mobilization**: We map buildings to their specific NYC Council Districts, providing residents with AI-powered 311 scripts and direct "Email Representative" workflows to trigger formal accountability.
+- **Support Networks**: Real-time status updates keep care providers and family members informed about their loved ones’ accessibility status.
 
-### Frontend Setup
-1. Navigate to the frontend directory: `cd frontend`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
-4. Run linting and type-checks: `npm run lint` and `npm run build`
-5. Run E2E tests: `npm run test:e2e`
-
-## Testing & Validation
-
-### Automated Checks
-I use a multi-layered validation strategy:
-- **Unit Tests**: `uv run pytest` (Runs fast, local-only tests).
-- **E2E Tests**: `npm run test:e2e` (Runs Playwright browser tests).
-- **Pre-Flight**: `backend/scripts/pre_flight.sh` (Runs the full suite: Ruff + Mypy + System Check + Pytest).
-
-### Smoke Tests (Credentialed)
-I have standalone scripts for verifying live API integrations. These require active API keys in your `.env`:
-- **SODA Sync**: `uv run test_soda.py`
-- **AI Orchestration**: `uv run test_ai_orchestration.py`
-- **Full System**: `uv run smoke_test.py`
-
-## Core Domain Logic
-- **The 2-Hour Consensus Rule**: An elevator outage is only marked as "Verified" once two different users report the same status within a rolling 2-hour window.
-- **Advocacy Workflow**: Residents can generate an AI-powered 311 script or use the **"Email Representative"** feature. This tool automatically maps the building to its NYC Council District and drafts an email to the correct member (e.g., Christopher Marte) including the building's specific "Loss of Service" data.
-- **SODA Pipeline**: I query the NYC Open Data Socrata API for category 81 (Elevator Danger/Inoperative) and category 63 (Failed Test) complaints.
-- **Agentic Analysis**: I use a Supervisor-Worker pattern to analyze data. The "Advocacy Strategist" agent maps building violations against NYC housing laws to provide specific "Next Step" workflows.
-
-## Architecture & API Workflow
-The platform acts as a **synthesis engine**, correlating disparate official data sources with real-time resident observations to produce a quantified "Loss of Service" metric. 
+## 🛠️ How It Works: The Data Synthesis Engine
+The platform acts as a reasoning layer that correlates real-time tenant observations with official city records.
 
 ```mermaid
 graph TD
@@ -93,19 +52,58 @@ graph TD
     P --> Q[Resident Files 311/Email Rep]
 ```
 
-### The Data Synthesis Engine
-1.  **Identity Resolution**: I first resolve a street address into a unique Building Identification Number (BIN) and capture political district IDs. This ensures all subsequent data is pinned to the correct physical structure.
-2.  **Multimodal Collection**: I pull official complaint history from the **SODA API** and perform a targeted local news search via **SerpAPI**.
-3.  **AI Orchestration**: I use **Gemini 2.5 Flash** as a "Reasoning Layer" to extract structured facts from unstructured news snippets and to generate the "Advocacy Strategist" scripts tailored to the building's specific legal standing.
-4.  **Actionable Output**: The resident receives a unified dashboard that converts raw data into high-impact tools, such as the "Email Representative" button that automatically includes the building's calculated "Loss of Service" stats.
+### Core Logic
+1.  **The 2-Hour Consensus Rule**: To prevent data noise, an elevator status remains unverified until a second observation is logged by a different `user_id` for the same building within a 2-hour window.
+2.  **Identity Resolution**: Every address is resolved to a unique **Building Identification Number (BIN)** via NYC Geoclient. This ensures that advocacy data is pinned to a physical structure, not just a fuzzy string.
+3.  **Agentic Analysis**: We use a **Supervisor-Worker** pattern (powered by Gemini 2.5 Flash) to analyze building history and local news, suggesting specific legal or community organizing steps based on NYC housing law.
 
-## Development Standards
-I maintain high professional standards for this codebase:
-- **Strict Linting**: I use **Ruff** for PEP-8 compliance and import sorting.
-- **Full Type-Hints**: Every Python function requires `mypy --strict` coverage (via `django-stubs`).
-- **Validation**: Every commit must pass the `pre_flight.sh` validation suite.
-- **Documentation**: I use Google-style docstrings for all services and models.
-- **UI/UX**: I use intentional empty states and visual pulsing for unverified data. No raw 0s are displayed for empty datasets.
+---
 
+## 💻 Tech Stack
+I selected these technologies to ensure a decoupled, performant, and type-safe environment suitable for a critical civic tool:
 
-For detailed developer instructions, please refer to [GEMINI.md](./GEMINI.md) and [docs/spec.md](./docs/spec.md).
+- **Backend**: Django 6.0 (utilizing `GeneratedField` and `db_default`), DRF, PostgreSQL.
+- **Frontend**: React 19 (using `use()` and `useOptimistic()`), TypeScript, Vite, Tailwind CSS.
+- **Orchestration**: Custom Python-based multi-agent system using Gemini 2.5 Flash.
+- **Package Management**: `uv` for Python (extremely fast, reproducible environments).
+- **Standards**: Strict PEP-8 compliance via **Ruff**, and full type-safety with `django-stubs`.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.12+ 
+- `uv` (Installed via `curl -LsSf https://astral.sh/uv/install.sh`)
+- Node.js 20+
+
+### Quick Setup
+1. **Backend**:
+   ```bash
+   cd backend
+   uv sync
+   cp .env.example .env # Add your NYC Open Data & Gemini keys
+   uv run python manage.py migrate
+   uv run python manage.py runserver
+   ```
+2. **Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+3. **Validation**:
+   Run `./backend/scripts/pre_flight.sh` to ensure the full suite (Ruff + Mypy + Pytest) is passing.
+
+---
+
+## 📈 Strategic Path Forward
+We aren't just building an app; we are building a **Power Block**. Our strategy involves:
+- **Direct Legislative Briefings**: Providing Councilmembers (like Justin Sanchez) with LoS reports to trigger DOB inquiries.
+- **Legal Integration**: Partnering with **Mobilization for Justice (MFJ)** to ensure LoS data is legally admissible in court.
+- **Grassroots Organizing**: Aligning with **CASA** and **Mothers on the Move** to integrate reporting into existing tenant unions.
+
+**Data is power.** By moving from anecdote to evidence, we ensure that accessibility is treated not as a whim of management, but as a fundamental human right.
+
+---
+*For detailed architectural documentation, see [docs/spec.md](./docs/spec.md) and [GEMINI.md](./GEMINI.md).*
