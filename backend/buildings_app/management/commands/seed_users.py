@@ -74,7 +74,9 @@ class Command(BaseCommand):
         if created:
             self.stdout.write(self.style.SUCCESS(f"  Created superuser: {username}"))
         else:
-            self.stdout.write(self.style.SUCCESS(f"  Updated password for superuser: {username}"))
+            self.stdout.write(
+                self.style.SUCCESS(f"  Updated password for superuser: {username}")
+            )
 
     def _seed_tenant_users(self, password: str) -> None:
         """Create the five demo tenant accounts if they do not already exist.
