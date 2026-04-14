@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework.test import APIClient
+from rest_framework.test import APITestCase
 
 from services.geoclient import GeoclientService
 
@@ -86,20 +86,19 @@ class ConsensusManagerTests(TestCase):
         self.assertEqual(self.manager.get_verified_status(self.building), "DOWN")
 
 
-class BuildingViewSetTests(TestCase):
+class BuildingViewSetTests(APITestCase):
     """
     Integration tests for BuildingViewSet actions.
     """
 
-    def setUp(self):
-        self.client = APIClient()
+    def setUp(self) -> None:
         self.user = User.objects.create_user(username="testuser", password="password")
         self.building = Building.objects.create(
             bin="1234567", address="123 Broadway", borough="Manhattan"
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_report_status_action_success(self):
+    def test_report_status_action_success(self) -> None:
         """
         The report_status action should successfully create an ElevatorReport.
         """
@@ -111,9 +110,11 @@ class BuildingViewSetTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         self.assertEqual(ElevatorReport.objects.count(), 1)
-        self.assertEqual(ElevatorReport.objects.first().status, "DOWN")
+        report = ElevatorReport.objects.first()
+        assert report is not None
+        self.assertEqual(report.status, "DOWN")
 
-    def test_report_status_action_invalid_status(self):
+    def test_report_status_action_invalid_status(self) -> None:
         """
         The report_status action should return 400 for an invalid status.
         """
@@ -124,9 +125,10 @@ class BuildingViewSetTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
+        assert isinstance(response.data, dict)
         self.assertIn("Invalid status", response.data["error"])
 
-    def test_report_status_action_unauthenticated(self):
+    def test_report_status_action_unauthenticated(self) -> None:
         """
         The report_status action should require authentication.
         """

@@ -1,5 +1,16 @@
-# Sol Memory Log - Sprint 10 Regressions
-- **Strategy:** Initiated Sprint 10 "Martha Mode" for vulnerable user UX.
-- **Orchestration:** Integrated emergency alert blocks, human-readable labels, and auth-triggering report logic.
-- **Current Blocker:** Interrupted session left the frontend in a broken state with 8 TypeScript errors (TS2448/TS2454) in `App.tsx` and `BuildingDetail.tsx`.
-- **Next Session Priority:** Execute remediation plan to fix hook ordering and pass full project validation.
+# Sol Memory Log - CI & Type-Safety Resolution (2026-04-13)
+
+- **Strategy:** Conducted a full system-wide audit to resolve GitHub Actions CI failures.
+- **Backend (Django 6.0):** 
+    - Resolved 80+ Mypy errors. 
+    - Mandatory: Use `django-stubs-ext.monkeypatch()` in `settings.py` to support runtime generics (e.g., `admin.ModelAdmin[Building]`).
+    - Standardized return type annotations and explicit generic arguments in serializers and views.
+    - Verified all backend tests (Pytest) and Ruff linting pass.
+- **Frontend (React 19):**
+    - Cleared ESLint warnings in `BuildingDetail.tsx`.
+    - Verified `tsc` and `vite build` pass.
+- **Validation:** 
+    - Full `pre_flight.sh` success in the backend.
+    - 3/3 Playwright tests passed in the frontend.
+- **State:** The codebase is now structurally sound and CI-ready.
+- **Key Lesson:** Django 6.0 and Mypy require `django-stubs` with runtime monkeypatching to handle modern generic patterns in `admin.py` and `views.py`.

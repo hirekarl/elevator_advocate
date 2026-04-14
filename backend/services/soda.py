@@ -34,7 +34,10 @@ class SODAService:
         try:
             response = requests.get(self.BASE_URL, params=params, timeout=10)
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            if isinstance(data, list):
+                return data
+            return []
         except requests.RequestException as e:
             print(f"SODA Error: {e}")
             return []
@@ -58,7 +61,10 @@ class SODAService:
         try:
             response = requests.get(self.BASE_URL, params=params, timeout=15)
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            if isinstance(data, list):
+                return data
+            return []
         except requests.RequestException as e:
             print(f"SODA Sync Error: {e}")
             return []

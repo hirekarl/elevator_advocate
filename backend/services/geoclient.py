@@ -77,6 +77,9 @@ class GeoclientService:
         try:
             response = requests.get(bin_url, headers=headers, timeout=10)
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            if isinstance(data, dict):
+                return data
+            return {}
         except requests.RequestException:
             return {}

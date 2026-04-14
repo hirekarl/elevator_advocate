@@ -215,7 +215,7 @@ class AuthViewSet(viewsets.ViewSet):
         return Response({"error": "Invalid or expired confirmation link."}, status=400)
 
 
-class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
+class BuildingViewSet(viewsets.ReadOnlyModelViewSet[Building]):
     """
     API endpoint for viewing buildings and their verified status.
     """

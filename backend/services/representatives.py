@@ -30,7 +30,9 @@ class RepresentativeService:
 
         # Clean the district ID (remove leading zeros)
         clean_id = (
-            str(int(district_id)) if district_id and district_id.isdigit() else district_id
+            str(int(district_id))
+            if district_id and district_id.isdigit()
+            else district_id
         )
 
         try:

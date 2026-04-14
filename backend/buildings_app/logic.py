@@ -76,13 +76,17 @@ class ConsensusManager:
         if not created and not building.city_council_district:
             if geo_data.get("city_council_district"):
                 building.city_council_district = geo_data.get("city_council_district")
-                building.state_assembly_district = geo_data.get("state_assembly_district")
+                building.state_assembly_district = geo_data.get(
+                    "state_assembly_district"
+                )
                 building.state_senate_district = geo_data.get("state_senate_district")
-                building.save(update_fields=[
-                    "city_council_district", 
-                    "state_assembly_district", 
-                    "state_senate_district"
-                ])
+                building.save(
+                    update_fields=[
+                        "city_council_district",
+                        "state_assembly_district",
+                        "state_senate_district",
+                    ]
+                )
 
         return building, created
 
@@ -127,8 +131,8 @@ class ConsensusManager:
         )
 
         for report in reports:
-            if report["unique_users"] >= 2:
-                return report["status"]
+            if int(report["unique_users"]) >= 2:
+                return str(report["status"])
 
         return "UNVERIFIED"
 
@@ -185,7 +189,9 @@ class ConsensusManager:
         percentage = (total_down_seconds / total_period_seconds) * 100
         return round(min(percentage, 100.0), 2)
 
-    def sync_soda_reports(self, building: Building, soda_reports: List[Dict[str, Any]]):
+    def sync_soda_reports(
+        self, building: Building, soda_reports: List[Dict[str, Any]]
+    ) -> None:
         """
         Synchronizes official SODA reports into our local database.
 

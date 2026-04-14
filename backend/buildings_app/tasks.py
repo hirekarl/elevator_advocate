@@ -1,4 +1,5 @@
 from typing import List
+
 import requests
 from django.tasks import task
 
@@ -8,7 +9,7 @@ from .models import Building, BuildingNews, CouncilDistrict
 
 
 @task
-def sync_council_members():
+def sync_council_members() -> str:
     """
     Kiran's Task: Periodically syncs NYC Council members from the Councilmatic API.
     """
@@ -41,7 +42,7 @@ def sync_council_members():
 
 
 @task
-def fetch_building_news(bin: str):
+def fetch_building_news(bin: str) -> str:
     """
     Kiran's Task: Asynchronously fetches and parses news articles for a building.
     Uses the new Django 6.0 Tasks framework.

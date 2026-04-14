@@ -3,7 +3,10 @@ from pathlib import Path
 from typing import List
 
 import dj_database_url
+import django_stubs_ext
 from dotenv import load_dotenv
+
+django_stubs_ext.monkeypatch()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = BASE_DIR.parent

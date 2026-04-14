@@ -4,25 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('buildings_app', '0007_building_city_council_district_and_more'),
+        ("buildings_app", "0007_building_city_council_district_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CouncilDistrict',
+            name="CouncilDistrict",
             fields=[
-                ('district_id', models.CharField(max_length=10, primary_key=True, serialize=False)),
-                ('member_name', models.CharField(max_length=100)),
-                ('email', models.EmailField(blank=True, max_length=254, null=True)),
-                ('phone', models.CharField(blank=True, max_length=20, null=True)),
-                ('last_synced', models.DateTimeField(auto_now=True)),
+                (
+                    "district_id",
+                    models.CharField(max_length=10, primary_key=True, serialize=False),
+                ),
+                ("member_name", models.CharField(max_length=100)),
+                ("email", models.EmailField(blank=True, max_length=254, null=True)),
+                ("phone", models.CharField(blank=True, max_length=20, null=True)),
+                ("last_synced", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Council District',
-                'verbose_name_plural': 'Council Districts',
-                'ordering': ['district_id'],
+                "verbose_name": "Council District",
+                "verbose_name_plural": "Council Districts",
+                "ordering": ["district_id"],
             },
         ),
     ]

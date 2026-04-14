@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 
 
@@ -26,7 +28,7 @@ class GeoSearchService:
 
     def get_bin_with_coordinates(
         self, house_number: str, street: str, borough: str
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Geocodes a street address and returns the BIN and lat/lon.
 
@@ -67,7 +69,7 @@ class GeoSearchService:
             print(f"GeoSearch Error: {exc}")
             return {}
 
-    def get_address_details(self, bin_id: str) -> dict:
+    def get_address_details(self, bin_id: str) -> dict[str, Any]:
         """
         GeoSearch does not support BIN-based reverse lookup, so this returns
         an empty dict. The field is only used by ancillary tooling, not the

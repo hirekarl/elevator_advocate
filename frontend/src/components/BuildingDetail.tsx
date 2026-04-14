@@ -172,17 +172,6 @@ export function BuildingDetail({ buildingData, isLoggedIn = false, onShowAuth, o
     }
   };
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'DOWN': return 'danger';
-      case 'TRAPPED': return 'danger';
-      case 'UNSAFE': return 'danger';
-      case 'UNVERIFIED': return 'warning';
-      case 'SLOW': return 'warning';
-      default: return 'success';
-    }
-  };
-
   const getStatusRibbonClass = (status: string): string => {
     if (['DOWN', 'TRAPPED', 'UNSAFE'].includes(status)) return 'ribbon-danger';
     if (['UNVERIFIED', 'SLOW'].includes(status)) return 'ribbon-warning';
