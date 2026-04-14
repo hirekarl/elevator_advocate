@@ -294,77 +294,49 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _seed_building_news(self, buildings: list[Building]) -> None:
-        from datetime import date
-
         from buildings_app.models import BuildingNews
         from services.news_search import NewsSearchService
 
-        # Building A: Live AI extraction (Directly calling service to avoid Task object wrapper)
-        building_a = buildings[0]
-        self.stdout.write(f"Fetching live news for {building_a.address}...")
-        try:
-            service = NewsSearchService()
-            articles = service.search_and_extract(building_a.address)
-            added_count = 0
-            for art in articles:
-                if art.relevance_score >= 0.7 and art.summary.lower() != "irrelevant":
-                    _, created = BuildingNews.objects.get_or_create(
-                        url=art.url,
-                        defaults={
-                            "building": building_a,
-                            "title": art.title,
-                            "source": art.source,
-                            "published_date": art.published_date,
-                            "summary": art.summary,
-                            "relevance_score": art.relevance_score,
-                        },
+        for building in buildings:
+            self.stdout.write(f"Fetching live news for {building.address}...")
+            try:
+                service = NewsSearchService()
+                articles = service.search_and_extract(building.address)
+                added_count = 0
+                for art in articles:
+                    if (
+                        art.relevance_score >= 0.7
+                        and art.summary.lower() != "irrelevant"
+                    ):
+                        _, created = BuildingNews.objects.get_or_create(
+                            url=art.url,
+                            defaults={
+                                "building": building,
+                                "title": art.title,
+                                "source": art.source,
+                                "published_date": art.published_date,
+                                "summary": art.summary,
+                                "relevance_score": art.relevance_score,
+                            },
+                        )
+                        if created:
+                            added_count += 1
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"  Successfully processed {len(articles)} articles "
+                        f"({added_count} new) for {building.address}."
                     )
-                    if created:
-                        added_count += 1
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"  Successfully processed {len(articles)} articles "
-                    f"({added_count} new) for {building_a.address}."
                 )
-            )
-        except Exception as e:
-            self.stdout.write(
-                self.style.WARNING(f"  Live news fetch failed: {e}. Seeding mock.")
-            )
-            BuildingNews.objects.get_or_create(
-                url="https://gothamist.com/news/manhattan-elevator-crisis",
-                defaults={
-                    "building": building_a,
-                    "title": f"Ongoing Elevator Crisis at {building_a.address}",
-                    "source": "Gothamist (Mock)",
-                    "published_date": date(2025, 12, 1),
-                    "summary": (
-                        "Tenants at the luxury high-rise report months of "
-                        "intermittent service and entrapments."
-                    ),
-                    "relevance_score": 0.98,
-                },
-            )
+            except Exception as e:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"  Live news fetch failed for {building.address}: {e}."
+                    )
+                )
 
-        # Building B: Always mock for seed stability
-        building_b = buildings[1]
-        BuildingNews.objects.get_or_create(
-            url="https://thecity.nyc/bronx-building-violations",
-            defaults={
-                "building": building_b,
-                "title": (
-                    f"DOB Cites Bronx Building {building_b.address} for Safety Failures"
-                ),
-                "source": "The City (Mock)",
-                "published_date": date(2026, 1, 15),
-                "summary": (
-                    "Building inspectors found multiple high-priority "
-                    "violations in the elevator machinery room."
-                ),
-                "relevance_score": 0.92,
-            },
+        self.stdout.write(
+            self.style.SUCCESS("  News seeding complete (Live search only).")
         )
-        self.stdout.write(self.style.SUCCESS("  Seeded news for both buildings."))
 
     # ------------------------------------------------------------------
     # Summary

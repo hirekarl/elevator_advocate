@@ -38,16 +38,14 @@ class NewsSearchService:
     def search_and_extract(self, address: str) -> List[NewsArticleSchema]:
         """
         Performs the search and extraction pipeline.
+        Returns an empty list if no results are found or if API keys are missing.
         """
-        use_mock_serp = os.getenv("USE_MOCK_SERPAPI", "False") == "True"
+        if not self.gemini_api_key or not self.serp_api_key:
+            print("Missing API keys for NewsSearchService. Returning empty list.")
+            return []
 
-        if not self.gemini_api_key:
-            return self.get_mock_results(address)
-
-        # 1. Search via SerpAPI (or Mock)
-        if use_mock_serp or not self.serp_api_key:
-            organic_results = self.get_mock_serp_results(address)
-        else:
+        # 1. Search via SerpAPI
+        try:
             serp_client = serpapi.Client(api_key=self.serp_api_key)
             results = serp_client.search(
                 {
@@ -57,6 +55,9 @@ class NewsSearchService:
                 }
             )
             organic_results = results.get("organic_results", [])[:5]
+        except Exception as e:
+            print(f"SerpAPI Search Error for {address}: {e}")
+            return []
 
         # 2. Extract and Validate via Native Gemini SDK
         articles = []
@@ -65,7 +66,16 @@ class NewsSearchService:
                 # Native Structured Output with Pydantic
                 response = self.client.models.generate_content(
                     model="gemini-2.5-flash",
-                    contents=f"You are a specialized investigator. EXTRACT ONLY news articles that explicitly mention elevator outages, repairs, or safety violations at the building address: {address}. If the snippet is about dispensaries, real estate ads, or general neighborhood news UNRELATED to elevators, set the relevance_score to 0.0 and summary to 'Irrelevant'.\n\nTitle: {res.get('title')}\nSnippet: {res.get('snippet')}\nURL: {res.get('link')}",
+                    contents=(
+                        f"You are a specialized investigator. EXTRACT ONLY news articles that explicitly "
+                        f"mention elevator outages, repairs, or safety violations at the building "
+                        f"address: {address}. If the snippet is about dispensaries, real estate ads, "
+                        f"or general neighborhood news UNRELATED to elevators, set the relevance_score "
+                        f"to 0.0 and summary to 'Irrelevant'.\n\n"
+                        f"Title: {res.get('title')}\n"
+                        f"Snippet: {res.get('snippet')}\n"
+                        f"URL: {res.get('link')}"
+                    ),
                     config={
                         "response_mime_type": "application/json",
                         "response_schema": NewsArticleSchema,
@@ -80,50 +90,3 @@ class NewsSearchService:
                 print(f"Extraction Error for {res.get('title')}: {e}")
 
         return articles
-
-    def get_mock_serp_results(self, address: str) -> List[dict]:
-        """
-        Provides realistic raw SerpAPI results for testing Gemini extraction.
-        """
-        return [
-            {
-                "title": f"Elevator Outage at {address} Leaves Seniors Stranded",
-                "link": "https://gothamist.com/news/mock-elevator-story-1",
-                "snippet": f"Residents of {address} reported consistent failures across all three elevators over a 48-hour period. 'We are trapped,' said one tenant.",
-            },
-            {
-                "title": f"NYC DOB Issues Multiple Violations for {address}",
-                "link": "https://thecity.nyc/2026/01/building-violations-mock",
-                "snippet": f"The Department of Buildings identified failed safety tests in the elevator shafts at {address} during a surprise inspection.",
-            },
-            {
-                "title": "Local Neighborhood News",
-                "link": "https://patch.com/new-york/neighborhood-news",
-                "snippet": "A new community garden is opening down the street from the local school. Residents are excited for spring.",
-            },
-        ]
-
-    def get_mock_results(self, address: str) -> List[NewsArticleSchema]:
-        """
-        Provides realistic mock data if API keys are missing.
-        """
-        return [
-            NewsArticleSchema(
-                title=f"Elevator Outage at {address} Leaves Seniors Stranded",
-                url="https://gothamist.com/news/mock-elevator-story-1",
-                source="Gothamist (MOCK)",
-                published_date=date(2025, 12, 10),
-                summary="Residents of the building reported consistent failures across all three elevators over a 48-hour period.",
-                relevance_score=0.95,
-                is_mocked=True,
-            ),
-            NewsArticleSchema(
-                title=f"NYC DOB Issues Multiple Violations for {address}",
-                url="https://thecity.nyc/2026/01/building-violations-mock",
-                source="The City (MOCK)",
-                published_date=date(2026, 1, 15),
-                summary="The Department of Buildings identified failed safety tests in the building's elevator shafts.",
-                relevance_score=0.85,
-                is_mocked=True,
-            ),
-        ]
