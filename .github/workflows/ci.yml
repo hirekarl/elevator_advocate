@@ -10,7 +10,7 @@ jobs:
   backend-ci:
     name: Backend (Python + Django)
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
@@ -45,6 +45,10 @@ jobs:
       - name: Django System Check
         working-directory: ./backend
         run: DJANGO_SECRET_KEY=ci-test-key-not-for-production DJANGO_DEBUG=True uv run python manage.py check
+
+      - name: Check formatting with ruff
+        working-directory: ./backend
+        run: uv run ruff format . --check
 
       - name: Lint with ruff
         working-directory: ./backend
@@ -83,6 +87,10 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
+      - name: Type check with tsc
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+
       - name: Lint
         working-directory: ./frontend
         run: npm run lint
@@ -90,3 +98,16 @@ jobs:
       - name: Build
         working-directory: ./frontend
         run: npm run build
+
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy API
+        run: curl -X POST "${{ secrets.RENDER_API_DEPLOY_HOOK_URL }}"
+
+      - name: Deploy Frontend
+        run: curl -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}"
