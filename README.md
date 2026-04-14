@@ -13,7 +13,8 @@ I selected these technologies to ensure a decoupled, performant, and type-safe e
 - **Backend**: Django 6.0, Django REST Framework, PostgreSQL.
 - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS.
 - **Package Management**: `uv` for Python, `npm` for JavaScript.
-- **Orchestration**: Custom Python-based multi-agent system.
+- **Type Safety**: `django-stubs` with `django-stubs-ext` for full generic support in Django 6.0.
+- **Orchestration**: Custom Python-based multi-agent system using Gemini 2.5 Flash.
 
 ## Getting Started
 
@@ -25,18 +26,35 @@ I selected these technologies to ensure a decoupled, performant, and type-safe e
 ### Backend Setup
 1. Navigate to the backend directory: `cd backend`
 2. Create and sync the environment: `uv sync`
-3. Set up your environment variables: `cp .env.example .env` (Add your NYC Open Data and Geoclient keys).
+3. Set up your environment variables: `cp .env.example .env` (Add your NYC Open Data, SerpAPI, and Gemini API keys).
 4. Run migrations: `uv run python manage.py migrate`
 5. Start the server: `uv run python manage.py runserver`
+6. **Validation**: Run `./scripts/pre_flight.sh` to ensure Ruff, Mypy, and Pytest are all passing.
 
 ### Frontend Setup
 1. Navigate to the frontend directory: `cd frontend`
 2. Install dependencies: `npm install`
 3. Start the development server: `npm run dev`
-4. Run E2E tests: `npm run test:e2e`
+4. Run linting and type-checks: `npm run lint` and `npm run build`
+5. Run E2E tests: `npm run test:e2e`
+
+## Testing & Validation
+
+### Automated Checks
+I use a multi-layered validation strategy:
+- **Unit Tests**: `uv run pytest` (Runs fast, local-only tests).
+- **E2E Tests**: `npm run test:e2e` (Runs Playwright browser tests).
+- **Pre-Flight**: `backend/scripts/pre_flight.sh` (Runs the full suite: Ruff + Mypy + System Check + Pytest).
+
+### Smoke Tests (Credentialed)
+I have standalone scripts for verifying live API integrations. These require active API keys in your `.env`:
+- **SODA Sync**: `uv run test_soda.py`
+- **AI Orchestration**: `uv run test_ai_orchestration.py`
+- **Full System**: `uv run smoke_test.py`
 
 ## Core Domain Logic
 - **The 2-Hour Consensus Rule**: An elevator outage is only marked as "Verified" once two different users report the same status within a rolling 2-hour window.
+- **Advocacy Workflow**: Residents can generate an AI-powered 311 script or use the **"Email Representative"** feature. This tool automatically maps the building to its NYC Council District and drafts an email to the correct member (e.g., Christopher Marte) including the building's specific "Loss of Service" data.
 - **SODA Pipeline**: I query the NYC Open Data Socrata API for category 81 (Elevator Danger/Inoperative) and category 63 (Failed Test) complaints.
 - **Agentic Analysis**: I use a Supervisor-Worker pattern to analyze data. The "Advocacy Strategist" agent maps building violations against NYC housing laws to provide specific "Next Step" workflows.
 
@@ -83,8 +101,11 @@ graph TD
 
 ## Development Standards
 I maintain high professional standards for this codebase:
-- **Full Type-Hints**: Every Python function requires `mypy` coverage.
+- **Strict Linting**: I use **Ruff** for PEP-8 compliance and import sorting.
+- **Full Type-Hints**: Every Python function requires `mypy --strict` coverage (via `django-stubs`).
+- **Validation**: Every commit must pass the `pre_flight.sh` validation suite.
 - **Documentation**: I use Google-style docstrings for all services and models.
 - **UI/UX**: I use intentional empty states and visual pulsing for unverified data. No raw 0s are displayed for empty datasets.
+
 
 For detailed developer instructions, please refer to [GEMINI.md](./GEMINI.md) and [project_spec.md](./project_spec.md).
