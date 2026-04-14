@@ -23,15 +23,15 @@ from services.soda import SODAService
 
 BUILDINGS_TO_SEED = [
     {
-        "label": "Building A (Manhattan)",
-        "house_number": "2",
-        "street": "Gold Street",
+        "label": "Grand Street Guild (Manhattan)",
+        "house_number": "131",
+        "street": "Broome Street",
         "borough": "manhattan",
     },
     {
-        "label": "Building B (Bronx)",
-        "house_number": "1010",
-        "street": "Grand Concourse",
+        "label": "Anthony Avenue (Bronx)",
+        "house_number": "1853",
+        "street": "Anthony Avenue",
         "borough": "bronx",
     },
 ]
