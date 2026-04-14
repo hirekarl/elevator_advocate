@@ -185,6 +185,19 @@ HeroSearch (address input)
 3. **Predictive engine** (`buildings_app/ai_logic.py`): 7-day failure risk score using 180-day baseline vs. 14-day recent volatility
 4. **News intelligence** (`services/news_search.py`): SerpAPI → Gemini extraction → relevance score (0–1); 24-hour refresh cooldown per building to protect API quotas
 
+### Council District Directory (`buildings_app/fixtures/council_districts.json`)
+
+NYC Council member contact data is stored as a **static Django fixture**, not a live API sync. All 51 districts are populated via `manage.py loaddata council_districts`, which runs on every Render deploy via `render_build.sh`.
+
+**Why static?** The Councilmatic API (`councilmatic.org/api/nyc/members/`) returned 404 — no reliable free API exists for this data. Council membership changes at most every 4 years (election cycle), so a fixture is a pragmatic and stable choice.
+
+**Maintenance:** After each NYC Council election (held in odd years; next: November 2029), update `council_districts.json` from `council.nyc.gov/districts` and redeploy. The fixture uses `loaddata`, which is idempotent — it upserts by primary key (`district_id`).
+
+**Future improvements to consider:**
+- **NYC Open Data**: Dataset [nycc-councilmembers](https://data.cityofnewyork.us/City-Government/NYC-City-Council-Members/uvem-bfqq) may carry current member data — worth evaluating as a live source before the 2029 cycle.
+- **Scrape on deploy**: A lightweight scraper against `council.nyc.gov/districts` (the source we used to build this fixture) could replace the static file. Run it in `render_build.sh` before `loaddata` to keep data fresh without manual intervention.
+- **Admin action**: An "Update from council.nyc.gov" button in Django Admin could let non-developers refresh the directory without a redeploy.
+
 ### Auth
 
 Token-based (DRF `TokenAuthentication`). Token stored in localStorage on the frontend, sent as `Authorization: Token <token>`. User profiles extend `User` via OneToOne (`UserProfile.primary_building`). Advocacy logs are private to the owning user.
