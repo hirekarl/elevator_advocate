@@ -27,10 +27,6 @@ else
     echo "Skipping seed_users — SEED_ADMIN_PASSWORD or SEED_USER_PASSWORD not set."
 fi
 
-# Sync NYC Council member data
-echo "Syncing NYC Council members..."
-uv run python manage.py shell -c "
-from buildings_app.tasks import sync_council_members
-result = sync_council_members.enqueue()
-print(result)
-"
+# Load NYC Council member data
+echo "Loading NYC Council district fixture..."
+uv run python manage.py loaddata council_districts

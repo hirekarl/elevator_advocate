@@ -147,7 +147,7 @@ class AdvocacyLog(models.Model):
 class CouncilDistrict(models.Model):
     """
     Stores NYC Council District information and current member contact details.
-    Updated periodically via the Councilmatic API.
+    Populated via the council_districts fixture; update the fixture after each election cycle.
     """
 
     district_id = models.CharField(max_length=10, primary_key=True)
