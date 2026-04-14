@@ -1,64 +1,52 @@
-from typing import Any, Dict
-
+import json
+import os
+from typing import Dict, Any, Optional
 
 class RepresentativeService:
     """
     Service for fetching NYC Representative contact information.
-    Fulfills Martha's requirement for a personal advocacy contact.
+    Uses a local JSON mapping for all 51 City Council districts.
     """
 
-    # Static Mapping for the current session's key districts.
-    # Data sourced from council.nyc.gov (as of 2026).
-    DISTRICT_MAPPING: Dict[str, Dict[str, str]] = {
-        "1": {
-            "name": "Christopher Marte",
-            "title": "Council Member (District 1)",
-            "email": "district1@council.nyc.gov",
-            "phone": "212-587-3159",
-        },
-        "16": {
-            "name": "Althea Stevens",
-            "title": "Council Member (District 16)",
-            "email": "District16@council.nyc.gov",
-            "phone": "718-588-7500",
-        },
-    }
+    def __init__(self):
+        self.data_path = os.path.join(os.path.dirname(__file__), 'nyc_council_districts.json')
+        self._mapping = {}
+        self._load_mapping()
 
-    GENERIC_FALLBACK = {
-        "name": "NYC City Council",
-        "title": "Representative",
-        "email": "council@council.nyc.gov",
-        "phone": "212-788-7100",
-        "district": "NYC",
-    }
+    def _load_mapping(self):
+        try:
+            with open(self.data_path, 'r') as f:
+                self._mapping = json.load(f)
+        except Exception as e:
+            print(f"Error loading NYC Council mapping: {e}")
 
     def get_representative_for_address(self, address: str) -> Dict[str, Any]:
         """
-        Maps an address to its City Council representative.
-        Used when the district ID hasn't been cached on the model yet.
+        Generic fallback if district is unknown.
         """
-        # For Martha (2 Gold St), we know this is District 1
-        if "2 Gold St" in address or "Broadway" in address:
-            return {**self.DISTRICT_MAPPING["1"], "district": "1"}
-
-        # For Carlos (1010 Grand Concourse), we know this is District 16
-        if "1010 Grand Concourse" in address:
-            return {**self.DISTRICT_MAPPING["16"], "district": "16"}
-
-        return self.GENERIC_FALLBACK
+        return {
+            "name": "NYC City Council",
+            "title": "Representative",
+            "email": "council@council.nyc.gov",
+            "phone": "212-788-7100",
+            "district": "NYC"
+        }
 
     def get_member_by_district(self, district_id: str) -> Dict[str, Any]:
         """
         Fetches City Council member details by district ID string.
         """
-        # Clean the district ID (some APIs return it as '01' instead of '1')
-        clean_id = (
-            str(int(district_id))
-            if district_id and district_id.isdigit()
-            else district_id
-        )
+        # Clean the district ID (remove leading zeros)
+        clean_id = str(int(district_id)) if district_id and district_id.isdigit() else district_id
 
-        if clean_id in self.DISTRICT_MAPPING:
-            return {**self.DISTRICT_MAPPING[clean_id], "district": clean_id}
+        if clean_id in self._mapping:
+            member = self._mapping[clean_id]
+            return {
+                "name": member.get("name"),
+                "title": f"Council Member (District {clean_id})",
+                "email": member.get("email"),
+                "phone": member.get("phone"),
+                "district": clean_id
+            }
 
-        return self.GENERIC_FALLBACK
+        return self.get_representative_for_address("")

@@ -65,8 +65,25 @@ class ConsensusManager:
                 "borough": borough,
                 "latitude": geo_data.get("latitude"),
                 "longitude": geo_data.get("longitude"),
+                "city_council_district": geo_data.get("city_council_district"),
+                "state_assembly_district": geo_data.get("state_assembly_district"),
+                "state_senate_district": geo_data.get("state_senate_district"),
             },
         )
+
+        # Backfill: If the building exists but lacks district data (e.g., from a previous GeoSearch fallback),
+        # and we now have district data from Geoclient, update it.
+        if not created and not building.city_council_district:
+            if geo_data.get("city_council_district"):
+                building.city_council_district = geo_data.get("city_council_district")
+                building.state_assembly_district = geo_data.get("state_assembly_district")
+                building.state_senate_district = geo_data.get("state_senate_district")
+                building.save(update_fields=[
+                    "city_council_district", 
+                    "state_assembly_district", 
+                    "state_senate_district"
+                ])
+
         return building, created
 
     def report_status(
