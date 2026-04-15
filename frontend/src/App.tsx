@@ -84,7 +84,9 @@ function MainDashboard() {
   };
 
   const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en');
+    const next = i18n.language === 'en' ? 'es' : 'en';
+    i18n.changeLanguage(next);
+    document.documentElement.lang = next;
   };
 
   return (
