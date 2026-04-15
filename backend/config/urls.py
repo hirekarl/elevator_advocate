@@ -16,9 +16,16 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path
 
+
+def robots_txt(request: object) -> HttpResponse:
+    return HttpResponse("User-agent: *\nDisallow: /\n", content_type="text/plain")
+
+
 urlpatterns = [
+    path("robots.txt", robots_txt),
     path("admin/", admin.site.urls),
     path("api/", include("buildings_app.urls")),
 ]
