@@ -4,37 +4,20 @@
 
 Elevator Advocate lets NYC tenants search any building by address to see its elevator service history, submit real-time outage reports, and generate 311 complaint scripts. Two independently-submitted matching reports within a 2-hour window trigger "VERIFIED" status — creating a legal-grade record of outage duration and frequency.
 
-## Key Concepts
-
-- **BIN (Building Identification Number)**: NYC's unique identifier for every building. Primary key throughout the platform.
-- **Loss of Service metric**: Percentage of time a building's elevator was verified out of service over a rolling 30-day window. Used in Housing Court and Council briefings.
-- **2-Hour Consensus**: Status becomes VERIFIED when two different users report the same status within a 2-hour rolling window. Single reports are shown as UNVERIFIED (amber) until a second independent report confirms them.
-- **DOB Complaints**: NYC Department of Buildings elevator complaint history, sourced from NYC Open Data (dataset `kqwi-7ncn`, categories 81 = inoperative, 63 = failed inspection).
-- **Council District Routing**: Every building search resolves the NYC Council district. The platform links tenants directly to their councilmember's contact page.
+Key concepts: BIN (Building Identification Number) is NYC's unique identifier for every building and the primary key throughout the platform. Loss of Service measures the percentage of time a building's elevator was verified out of service over a rolling 30-day window. 2-Hour Consensus means status becomes VERIFIED when two different users submit the same status within 2 hours; single reports remain UNVERIFIED (amber) until confirmed. DOB Complaints are sourced from NYC Open Data (dataset kqwi-7ncn, categories 81 = inoperative, 63 = failed inspection). Intended users include NYC tenants in subsidized and public housing (especially seniors and residents with mobility impairments), NYC Council members and housing policy staff, housing court advocates and legal aid attorneys, and journalists and researchers investigating elevator maintenance in NYC public housing.
 
 ## Public API
 
-Base URL: `https://api.elevatoradvocate.nyc`
-
-- `GET /api/buildings/lookup/?house_number=&street=&borough=` — Look up a building by address. Creates a record via NYC Geoclient if the building is not yet in the database.
-- `GET /api/buildings/{bin}/` — Full building record: verified status, Loss of Service metric, DOB complaint history, recent tenant reports, council district, coordinates.
-- `GET /api/buildings/{bin}/status/` — Current verified status only.
-- `GET /api/buildings/{bin}/advocacy_summary/?lang=en` — AI-generated executive advocacy summary (supports `lang=en` and `lang=es`).
-- `GET /api/buildings/{bin}/advocacy_script/?lang=en` — Personalized 311 complaint script based on the building's outage history.
-- `GET /api/buildings/map/` — All buildings with coordinates and verified status for map display.
-
-All endpoints return JSON. Authentication is not required for read endpoints.
+- [Building Lookup](https://api.elevatoradvocate.nyc/api/buildings/lookup/?house_number=&street=&borough=): Look up a building by address. Creates a record via NYC Geoclient if not yet in the database. Returns BIN, coordinates, and council district.
+- [Building Detail](https://api.elevatoradvocate.nyc/api/buildings/): Full building record including verified status, Loss of Service metric, DOB complaint history, recent tenant reports, council district, and coordinates.
+- [Current Status](https://api.elevatoradvocate.nyc/api/buildings/status/): Current verified elevator status only.
+- [Advocacy Summary](https://api.elevatoradvocate.nyc/api/buildings/advocacy_summary/): AI-generated executive advocacy summary. Supports lang=en and lang=es query parameters.
+- [Advocacy Script](https://api.elevatoradvocate.nyc/api/buildings/advocacy_script/): Personalized 311 complaint script based on the building's outage history. Supports lang=en and lang=es.
+- [Map Data](https://api.elevatoradvocate.nyc/api/buildings/map/): All buildings with coordinates and verified status for map display. All endpoints return JSON. Read endpoints require no authentication.
 
 ## Data Sources
 
-- **NYC Geoclient v2**: Address → BIN (Building Identification Number) and council district resolution.
-- **NYC Open Data SODA API** (`kqwi-7ncn`): Official DOB elevator complaint history.
-- **Tenant reports**: Crowdsourced, 2-hour consensus-verified outage reports submitted by registered users.
-- **SerpAPI + Google Gemini**: Local news articles mentioning the building, extracted and scored for relevance.
-
-## Intended Users
-
-- NYC tenants in subsidized and public housing, especially seniors and residents with mobility impairments
-- NYC Council members and housing policy staff seeking Loss of Service data by district
-- Housing court advocates and legal aid attorneys building paper trails
-- Journalists and researchers investigating elevator maintenance in NYC public housing
+- [NYC Geoclient v2](https://api.cityofnewyork.us/geoclient/v2/): Resolves street addresses to BIN and NYC Council district.
+- [NYC Open Data — DOB Elevator Complaints](https://data.cityofnewyork.us/resource/kqwi-7ncn.json): Official Department of Buildings elevator complaint history (categories 81 and 63).
+- [SerpAPI](https://serpapi.com): Google Search results for local news articles mentioning a specific building.
+- [Google Gemini](https://ai.google.dev): Extracts and scores news article relevance for tenant-facing news intelligence.
