@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { AccessibilitySection } from './AccessibilitySection';
 
 export function AdvocacySections() {
@@ -38,6 +39,14 @@ export function AdvocacySections() {
               <div className="advocacy-stat-subtext mt-2">{t('adv_stat3_sub')}</div>
               <div className="advocacy-stat-source">{t('adv_stat3_source')}</div>
             </div>
+          </div>
+
+          <div className="adv-data-thread">
+            <p className="adv-data-thread-label">{t('adv_data_thread_label')}</p>
+            <Link to="/data" className="adv-data-thread-cta">
+              {t('adv_data_thread_cta')}
+              <span className="adv-data-thread-arrow" aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
       </section>

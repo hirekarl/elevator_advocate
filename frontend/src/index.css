@@ -529,6 +529,51 @@ h1, h2, h3, h4, h5, h6,
   color: #fff;
 }
 
+.adv-data-thread {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin-top: 3rem;
+  padding-top: 1.75rem;
+  text-align: center;
+}
+
+.adv-data-thread-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 0.4rem;
+}
+
+.adv-data-thread-cta {
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: color 0.2s ease;
+}
+
+.adv-data-thread-cta:hover {
+  color: var(--c-amber);
+  text-decoration: none;
+}
+
+.adv-data-thread-arrow {
+  color: var(--c-amber);
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.adv-data-thread-cta:hover .adv-data-thread-arrow {
+  transform: translateX(5px);
+}
+
 .advocacy-human-cost {
   background-color: var(--c-ivory);
 }
