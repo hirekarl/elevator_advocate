@@ -2,6 +2,7 @@ import { use, Suspense, Component } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { API_BASE } from '../../utils/api';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ const SEASONAL_MAX = 135;
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
 function fetchCityStats(): Promise<CityStats> {
-  return fetch('/api/buildings/city-stats/').then((r) => {
+  return fetch(`${API_BASE}/api/buildings/city-stats/`).then((r) => {
     if (!r.ok) throw new Error('stats unavailable');
     return r.json() as Promise<CityStats>;
   });
