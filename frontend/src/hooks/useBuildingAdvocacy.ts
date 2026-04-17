@@ -58,10 +58,23 @@ export function useBuildingAdvocacy({
   const fetchExecutiveSummary = useCallback(async () => {
     setIsLoadingSummary(true);
     try {
-      const response = await fetch(`${API_BASE}/api/buildings/${buildingData.bin}/advocacy_summary/?lang=${i18n.language}`);
-      if (response.ok) {
-        const data = await response.json();
-        setExecutiveSummary(data);
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+        const response = await fetch(`${API_BASE}/api/buildings/${buildingData.bin}/advocacy_summary/?lang=${i18n.language}`);
+        if (response.ok) {
+          const data = await response.json();
+          setExecutiveSummary(data);
+          return;
+        }
+        if (response.status === 503) {
+          const data = await response.json().catch(() => ({}));
+          if (!data.retry) break;
+          // retry: true — wait and loop
+        } else {
+          break; // 4xx or unexpected — don't retry
+        }
       }
     } catch (error) {
       console.error("Error fetching executive summary:", error);

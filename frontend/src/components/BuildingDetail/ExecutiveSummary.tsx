@@ -11,7 +11,11 @@ interface ExecutiveSummaryProps {
 export function ExecutiveSummary({ executiveSummary, isLoadingSummary, onRefresh }: ExecutiveSummaryProps) {
   const { t } = useTranslation();
 
-  if (!isLoadingSummary && !executiveSummary) return null;
+  if (!isLoadingSummary && !executiveSummary) return (
+    <p className="text-muted small text-center py-2">
+      {t('summary_unavailable')} <button className="btn btn-link btn-sm p-0" onClick={onRefresh}>{t('try_again')}</button>
+    </p>
+  );
 
   return (
     <Card className="border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-primary border-5">

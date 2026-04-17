@@ -65,6 +65,8 @@
   "sign_in": "Sign In",
   "executive_summary_title": "AI Executive Summary",
   "generating_summary": "Synthesizing worker reports...",
+  "summary_unavailable": "Analysis unavailable.",
+  "try_again": "Try again",
   "risk_level_label": "Risk Level",
   "confidence_label": "AI Confidence",
   "historical_patterns_title": "Historical Patterns",
