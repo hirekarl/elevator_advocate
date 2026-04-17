@@ -1,6 +1,7 @@
 from typing import List
 
 from django.tasks import task
+from django.utils import timezone
 
 from services.news_search import NewsArticleSchema, NewsSearchService
 
@@ -37,6 +38,9 @@ def fetch_building_news(bin: str) -> str:
                 "relevance_score": art.relevance_score,
             },
         )
+
+    building.last_news_refresh = timezone.now()
+    building.save(update_fields=["last_news_refresh"])
 
     return (
         f"Successfully processed {len(articles)} news articles for {building.address}."
