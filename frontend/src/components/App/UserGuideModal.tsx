@@ -26,7 +26,7 @@ export function UserGuideModal({ show, onHide }: UserGuideModalProps) {
           {[1, 2, 3, 4].map((num) => (
             <div key={`guide-step-${num}`} className="d-flex align-items-center mb-4">
               <div
-                className="bg-light rounded-circle shadow-sm p-2 d-flex align-items-center justify-content-center border me-3"
+                className="bg-primary-subtle rounded-circle p-2 d-flex align-items-center justify-content-center me-3"
                 style={{ width: '56px', height: '56px', minWidth: '56px' }}
               >
                 <span className="fs-3" aria-hidden="true">
@@ -34,7 +34,7 @@ export function UserGuideModal({ show, onHide }: UserGuideModalProps) {
                 </span>
               </div>
               <p className="mb-0 fs-5 text-dark fw-medium leading-tight">
-                {t(`guide_step_${num}` as 'guide_step_1').replace(/^\d\.\s/, '')}
+                {t(`guide_step_${num}` as 'guide_step_1')}
               </p>
             </div>
           ))}
