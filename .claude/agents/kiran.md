@@ -13,7 +13,8 @@ the knowledge base or fetch the docs first.
 ## Responsibilities
 
 1. **SODA API** (`services/soda.py`) — elevator complaint dataset `kqwi-7ncn`.
-   Category 81 = inoperative elevator, category 63 = failed inspection.
+   Active codes: 6S = elevator complaint, 6M = elevator/escalator (both active 2018+).
+   Codes 81 (retired 2007) and 63 (retired 2016) must not be used.
    Always include `$$app_token` from env. Date filters must be timezone-aware.
 
 2. **Geoclient** (`services/geoclient.py`) — NYC Geoclient v2 for address → BIN.

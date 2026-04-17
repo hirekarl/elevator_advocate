@@ -181,7 +181,7 @@ HeroSearch (address input)
 ### Data Pipeline (`buildings_app/views.py`, `services/`)
 
 1. **Geocoding** (`services/geoclient.py`): Address → BIN via NYC Geoclient
-2. **SODA queries** (`services/soda.py`): Elevator complaints from dataset `kqwi-7ncn` (category 81 = inoperative, 63 = failed test)
+2. **SODA queries** (`services/soda.py`): Elevator complaints from dataset `kqwi-7ncn` (active codes: `6S` = elevator complaint, `6M` = elevator/escalator; codes `81` and `63` are retired and must not be used)
 3. **Predictive engine** (`buildings_app/ai_logic.py`): 7-day failure risk score using 180-day baseline vs. 14-day recent volatility
 4. **News intelligence** (`services/news_search.py`): SerpAPI → Gemini extraction → relevance score (0–1); 24-hour refresh cooldown per building to protect API quotas
 

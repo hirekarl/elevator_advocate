@@ -7,7 +7,7 @@ Deliver a functional prototype implementing the **2-Hour Consensus Window** for 
 
 ### 1. [Kiran] Data Ingestion & Mapping
 - **Geoclient Service:** Implement `Address -> BIN` mapping using the NYC Geoclient v2 API.
-- **SODA Service:** Pull filtered reports from dataset `kqwi-7ncn` (Descriptors 81: Inoperative, 63: Failed Test).
+- **SODA Service:** Pull filtered reports from dataset `kqwi-7ncn` (active codes `6S`: elevator complaint, `6M`: elevator/escalator).
 - **BIN Synchronization:** Ensure all incoming reports are keyed by Building Identification Number (BIN) for cross-service consistency.
 
 ### 2. [Elias] The Consensus Engine (Django 6.0)

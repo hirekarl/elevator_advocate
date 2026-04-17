@@ -23,7 +23,7 @@ A strategic pilot program to deploy Elevator Advocate in NYC Council District 17
 - **Advocacy Tool:** Automatic generation of 311 scripts and "Email Representative" drafts for Justin Sanchez.
 
 ## Pilot Building Selection Criteria
-- High volume of SODA categories '81' (Inoperative) and '63' (Failed Test).
+- High volume of SODA categories `'6S'` (elevator complaint) and `'6M'` (elevator/escalator).
 - NYCHA or rent-stabilized status.
 - Geocoded within District 17 boundaries.
 

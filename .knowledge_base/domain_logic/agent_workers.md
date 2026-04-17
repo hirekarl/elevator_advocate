@@ -6,7 +6,7 @@ The system uses a Supervisor agent to delegate research and strategy tasks to sp
 ### Workers
 1. **SODAResearcher:** 
    - **Task:** Aggregates elevator complaint history from the NYC SODA API (Dataset `kqwi-7ncn`).
-   - **Data Points:** Filters for categories '81' (Inoperative) and '63' (Failed Test).
+   - **Data Points:** Filters for active categories `'6S'` (elevator complaint) and `'6M'` (elevator/escalator). Codes `'81'` and `'63'` are retired and must not be used.
 2. **CommunityReporter:** 
    - **Task:** Scans and aggregates local tenant logs and internal verification history.
 3. **AdvocacyStrategist:** 

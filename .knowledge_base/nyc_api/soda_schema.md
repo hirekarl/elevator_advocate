@@ -11,10 +11,10 @@ Surgical mapping for elevator complaint ingestion.
 | :--- | :--- | :--- |
 | `unique_key` | `report_id` | Primary Key |
 | `created_date` | `reported_at` | Consensus window start |
-| `descriptor` | `outage_type` | Code 81=Inop, 63=Fail |
+| `descriptor` | `outage_type` | Code 6S=Elevator complaint, 6M=Elevator/escalator (active 2018+) |
 | `bin` | `building_id` | Linking key |
 
 ### Sample SoQL Query
 ```http
-?$where=descriptor IN ('81', '63') AND created_date > '2026-01-01T00:00:00'
+?$where=complaint_category IN ('6S', '6M') AND date_entered > '2026-01-01T00:00:00'
 ```

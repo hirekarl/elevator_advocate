@@ -1,8 +1,9 @@
 import os
-from datetime import datetime
+from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 import requests
+from django.utils import timezone
 
 
 class SODAService:
@@ -22,8 +23,9 @@ class SODAService:
         """
         Fetches complaints for a specific BIN, filtered by elevator-related categories.
         """
-        # Category codes: '81' (Elevator-Inoperative/Unsafe), '63' (Elevator-Failed Test)
-        where_clause = f"bin='{bin}' AND complaint_category IN ('81', '63')"
+        # Active category codes as of 2018: '6S' (elevator complaints) and '6M' (elevator/escalator).
+        # Codes '81' (retired 2007) and '63' (retired 2016) must not be used for current data.
+        where_clause = f"bin='{bin}' AND complaint_category IN ('6S', '6M')"
 
         params: Dict[str, Any] = {
             "$where": where_clause,
@@ -48,29 +50,25 @@ class SODAService:
         If hours=0, fetches the absolute most recent N outages regardless of time.
         """
         # SODA floating timestamp format: YYYY-MM-DDTHH:MM:SS
-        from datetime import timedelta
-
         if hours > 0:
-            limit_date = (datetime.now() - timedelta(hours=hours)).strftime(
+            limit_date = (timezone.now() - timedelta(hours=hours)).strftime(
                 "%Y-%m-%dT%H:%M:%S"
             )
             where_clause = (
-                f"complaint_category IN ('81', '63') AND date_entered > '{limit_date}'"
+                f"complaint_category IN ('6S', '6M') AND date_entered > '{limit_date}'"
             )
             params: Dict[str, Any] = {
                 "$where": where_clause,
                 "$$app_token": self.app_token,
             }
         else:
-            where_clause = "complaint_category IN ('81', '63')"
+            where_clause = "complaint_category IN ('6S', '6M')"
             params = {
                 "$where": where_clause,
                 "$order": "date_entered DESC",
                 "$limit": 1000,
                 "$$app_token": self.app_token,
             }
-
-        print(f"DEBUG SODA Query: {where_clause}")
 
         try:
             response = requests.get(self.BASE_URL, params=params, timeout=30)
