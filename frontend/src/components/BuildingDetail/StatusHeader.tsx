@@ -34,6 +34,20 @@ export function StatusHeader({
           <div>
             <h2 id="building-address" className="building-address-text mb-1 fs-3 fs-md-2">{buildingData.address}</h2>
             <p className="text-muted mb-0 small">{buildingData.borough} • BIN {buildingData.bin}</p>
+            {buildingData.representative && (
+              <p className="mb-0 small mt-1">
+                <span className="badge bg-primary-subtle text-primary-emphasis rounded-pill fw-semibold me-2">
+                  District {buildingData.city_council_district}
+                </span>
+                {buildingData.representative.email ? (
+                  <a href={`mailto:${buildingData.representative.email}`} className="text-decoration-none small fw-semibold">
+                    {buildingData.representative.name} ↗
+                  </a>
+                ) : (
+                  <span className="small fw-semibold">{buildingData.representative.name}</span>
+                )}
+              </p>
+            )}
           </div>
           {isLoggedIn && (
             <Button
