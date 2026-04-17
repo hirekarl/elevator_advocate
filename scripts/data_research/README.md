@@ -79,6 +79,32 @@ python city_overview.py --top 50         # expand the leaderboard
 
 ---
 
+---
+
+## Jupyter Notebooks
+
+The `notebooks/` folder contains presentation-ready versions of the four scripts above,
+with matplotlib charts, narrative markdown cells, and a **PARAMETERS** block at the top
+of each notebook so you can adjust years, districts, or buildings before a meeting.
+
+**Setup (one-time):**
+```bash
+cd scripts/data_research
+pip install -r requirements.txt
+jupyter lab
+```
+
+| Notebook | What it shows |
+|---|---|
+| `01_city_overview.ipynb` | Borough bar chart + ranked leaderboard |
+| `02_seasonal_trends.ipynb` | Monthly heatmap + the "+35% in July" headline |
+| `03_district_hotspots.ipynb` | Per-district bar charts; set `FOCUS="sanchez"` to isolate one |
+| `04_building_timeline.ipynb` | Dot timeline + year-over-year bars for a single building |
+
+All notebooks read `SODA_APP_TOKEN` from `../../.env` automatically.
+
+---
+
 ## Notes
 
 - All scripts use active SODA codes `6S` and `6M`. Codes `81` and `63` are retired
