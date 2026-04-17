@@ -35,6 +35,10 @@ uv run python manage.py loaddata council_districts
 echo "Backfilling council district data..."
 uv run python manage.py backfill_council_districts
 
+# Pre-load high-priority pilot buildings onto the map
+echo "Seeding pilot buildings..."
+uv run python manage.py seed_pilot_buildings
+
 # Pre-generate and cache Executive Advocacy Summaries
 echo "Generating advocacy summaries..."
 uv run python manage.py generate_summaries

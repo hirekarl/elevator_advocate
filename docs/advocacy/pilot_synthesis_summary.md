@@ -7,15 +7,25 @@ The core mission is to convert fragmented NYC Open Data (SODA) into a verified, 
 - **Heuristic:** Each verified "DOWN" report is assigned a 120-minute (2-hour) downtime block for calculation [cite: domain_logic/los_metrics.md].
 
 ## 2. Identified High-Priority "Hotspots"
-Based on a city-wide analysis of the 1,000 most recent elevator complaints, we have identified the top candidates for our initial pilot:
+Based on a city-wide analysis of ~10,000 elevator complaints using active SODA codes
+`6S` and `6M`, covering April 2025 – April 2026. Previous hotspot data (retired codes
+`81`/`63`) returned zero results and has been superseded entirely.
 
-| Address | Borough | District | Council Member | Recent Complaints |
+⚠️ District assignments below are inferred from community board geography. Confirm
+via NYC Council district geocoding before including in any briefing or outreach.
+
+| Address | Borough | District | Council Member | Complaints (12mo) |
 | :--- | :--- | :--- | :--- | :--- |
-| **7 Hegeman Avenue** | Brooklyn | 42 | **Chris Banks** | 11 |
-| **809 West 177th St** | Manhattan | 10 | **Carmen De La Rosa** | 6 |
-| **950 Jennings St** | Bronx | 16 | **Althea Stevens** | 5 |
-| **11 McKeever Place** | Brooklyn | 35 | **Crystal Hudson** | 5 |
-| **1880 Lafayette Ave** | Bronx | 18 | **Amanda Farías** | 5 |
+| **341 East 162 St** | Bronx | 16 (CB3) | **Althea Stevens** | 20 |
+| **150 Lefferts Ave** | Brooklyn | 35 (CB9) | **Crystal Hudson** | 16 |
+| **1150 Tiffany St** | Bronx | 17 (CB2) | **Justin Sanchez** | 12 |
+| **2045 Story Ave** | Bronx | 18 (CB9) | **Amanda Farías** | 8 |
+| **509 West 155 St** | Manhattan | 10 (CB12) | **Carmen De La Rosa** | 8 |
+| **33 Saratoga Ave** | Brooklyn | 42 (CB16) | **Chris Banks** | 8 |
+
+**Note on 341 East 162 St:** This is the strongest building in any priority district
+(20 complaints, Morrisania/CB3). CB3 is primarily D16 Stevens territory but borders
+D17 Sanchez. Geocode-confirm district assignment before briefing either member.
 
 ## 3. The District 17 Outreach Strategy
 Using Karl’s status as a constituent of **Justin Sanchez (D17)**, we are initiating a "Constituent-First" wedge to gain legislative sponsorship.

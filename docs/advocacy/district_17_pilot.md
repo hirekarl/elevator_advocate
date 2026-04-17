@@ -28,15 +28,21 @@ A strategic pilot program to deploy Elevator Advocate in NYC Council District 17
 - Geocoded within District 17 boundaries.
 
 ## City-Wide Hotspots (High-Priority Candidates)
-Based on a recent analysis of 1,000 SODA records, these buildings show extreme patterns of elevator failure:
+Based on ~10,000 SODA records using active codes `6S`/`6M`, April 2025 – April 2026.
+Previous data (retired codes `81`/`63`) has been superseded — those codes return zero
+results and all prior counts were invalid.
 
-| Address | Borough | Council District | Council Member | Complaints (Recent) |
+⚠️ District assignments inferred from community board geography. Geocode-confirm
+before including in any briefing or outreach material.
+
+| Address | Borough | Council District | Council Member | Complaints (12mo) |
 | :--- | :--- | :--- | :--- | :--- |
-| **7 Hegeman Avenue** | Brooklyn | 42 | **Chris Banks** | 11 |
-| **809 West 177th St** | Manhattan | 10 | **Carmen De La Rosa** | 6 |
-| **950 Jennings St** | Bronx | 16 | **Althea Stevens** | 5 |
-| **11 McKeever Place** | Brooklyn | 35 | **Crystal Hudson** | 5 |
-| **1880 Lafayette Ave** | Bronx | 18 | **Amanda Farías** | 5 |
+| **341 East 162 St** | Bronx | 16 (CB3) | **Althea Stevens** | 20 |
+| **150 Lefferts Ave** | Brooklyn | 35 (CB9) | **Crystal Hudson** | 16 |
+| **1150 Tiffany St** | Bronx | 17 (CB2) | **Justin Sanchez** | 12 |
+| **2045 Story Ave** | Bronx | 18 (CB9) | **Amanda Farías** | 8 |
+| **509 West 155 St** | Manhattan | 10 (CB12) | **Carmen De La Rosa** | 8 |
+| **33 Saratoga Ave** | Brooklyn | 42 (CB16) | **Chris Banks** | 8 |
 
 ## Multi-District Coalition Strategy
 For a successful pilot, **Justin Sanchez (District 17)** should collaborate with the following representatives whose districts contain the highest-frequency elevator failures:
