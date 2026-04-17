@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from django.views.generic import TemplateView
 from rest_framework import permissions, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
@@ -573,3 +574,33 @@ class ReportViewSet(viewsets.ViewSet):
                 ElevatorReportSerializer(report).data, status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DataStoriesSSRView(TemplateView):
+    """
+    Server-side rendered view of city-wide elevator complaint statistics.
+
+    Renders a fully populated HTML page at /api/data-ssr/ so that web crawlers
+    and LLM fetchers that do not execute JavaScript can index the data.  A
+    canonical link in the template consolidates Google ranking signals on the
+    React /data route, and a JS snippet redirects human browsers immediately so
+    they never see this fallback page.
+    """
+
+    template_name = "buildings_app/data_stories.html"
+
+    def get_context_data(self, **kwargs: object) -> dict[str, object]:
+        """
+        Injects city-wide SODA statistics into the template context.
+
+        Returns:
+            A dict containing a ``stats`` key whose value is the dict returned
+            by ``SODAService.get_city_stats()``.  On any SODA error the lists
+            inside ``stats`` are empty and ``total_complaints_12mo`` is 0 —
+            the template renders graceful empty states rather than raising 500.
+        """
+        from services.soda import SODAService
+
+        context = super().get_context_data(**kwargs)
+        context["stats"] = SODAService().get_city_stats()
+        return context

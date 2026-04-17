@@ -4,7 +4,7 @@
 
 Elevator Advocate lets NYC tenants search any building by address to see its elevator service history, submit real-time outage reports, and generate 311 complaint scripts. Two independently-submitted matching reports within a 2-hour window trigger "VERIFIED" status — creating a legal-grade record of outage duration and frequency.
 
-Key concepts: BIN (Building Identification Number) is NYC's unique identifier for every building and the primary key throughout the platform. Loss of Service measures the percentage of time a building's elevator was verified out of service over a rolling 30-day window. 2-Hour Consensus means status becomes VERIFIED when two different users submit the same status within 2 hours; single reports remain UNVERIFIED (amber) until confirmed. DOB Complaints are sourced from NYC Open Data (dataset kqwi-7ncn, categories 81 = inoperative, 63 = failed inspection). Intended users include NYC tenants in subsidized and public housing (especially seniors and residents with mobility impairments), NYC Council members and housing policy staff, housing court advocates and legal aid attorneys, and journalists and researchers investigating elevator maintenance in NYC public housing.
+Key concepts: BIN (Building Identification Number) is NYC's unique identifier for every building and the primary key throughout the platform. Loss of Service measures the percentage of time a building's elevator was verified out of service over a rolling 30-day window. 2-Hour Consensus means status becomes VERIFIED when two different users submit the same status within 2 hours; single reports remain UNVERIFIED (amber) until confirmed. DOB Complaints are sourced from NYC Open Data (dataset kqwi-7ncn, active complaint categories 6S = elevator complaint, 6M = elevator/escalator). Intended users include NYC tenants in subsidized and public housing (especially seniors and residents with mobility impairments), NYC Council members and housing policy staff, housing court advocates and legal aid attorneys, and journalists and researchers investigating elevator maintenance in NYC public housing.
 
 ## Public API
 
@@ -15,9 +15,13 @@ Key concepts: BIN (Building Identification Number) is NYC's unique identifier fo
 - [Advocacy Script](https://api.elevatoradvocate.nyc/api/buildings/advocacy_script/): Personalized 311 complaint script based on the building's outage history. Supports lang=en and lang=es.
 - [Map Data](https://api.elevatoradvocate.nyc/api/buildings/map/): All buildings with coordinates and verified status for map display. All endpoints return JSON. Read endpoints require no authentication.
 
+## Data Stories
+
+- [Elevator Advocate Data Stories — crawler-accessible](https://api.elevatoradvocate.nyc/api/data-ssr/): A server-side rendered HTML page (not JSON) containing city-wide elevator complaint statistics for NYC. Includes total complaint volume, borough-level breakdown, seasonal complaint index, and a leaderboard of buildings with the most frequent outage complaints. This is the recommended URL for LLM fetchers and web crawlers that want city-stats context without executing JavaScript. Updated daily.
+
 ## Data Sources
 
 - [NYC Geoclient v2](https://api.cityofnewyork.us/geoclient/v2/): Resolves street addresses to BIN and NYC Council district.
-- [NYC Open Data — DOB Elevator Complaints](https://data.cityofnewyork.us/resource/kqwi-7ncn.json): Official Department of Buildings elevator complaint history (categories 81 and 63).
+- [NYC Open Data — DOB Elevator Complaints](https://data.cityofnewyork.us/resource/kqwi-7ncn.json): Official Department of Buildings elevator complaint history (active categories: 6S = elevator complaint, 6M = elevator/escalator).
 - [SerpAPI](https://serpapi.com): Google Search results for local news articles mentioning a specific building.
 - [Google Gemini](https://ai.google.dev): Extracts and scores news article relevance for tenant-facing news intelligence.

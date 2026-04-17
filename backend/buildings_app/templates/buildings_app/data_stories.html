@@ -1,0 +1,310 @@
+{% load humanize %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYC Elevator Complaint Data — {{ stats.total_complaints_12mo|intcomma }} complaints in 12 months | Elevator Advocate</title>
+  <meta name="description" content="NYC elevator complaint data: {{ stats.total_complaints_12mo|intcomma }} complaints filed in the last 12 months across all five boroughs.{% if stats.borough_breakdown %} Top borough: {{ stats.borough_breakdown.0.name }} with {{ stats.borough_breakdown.0.count|intcomma }} complaints ({{ stats.borough_breakdown.0.pct }}%).{% endif %} Data sourced from NYC Open Data dataset kqwi-7ncn.">
+  <link rel="canonical" href="https://elevatoradvocate.nyc/data">
+  <meta name="robots" content="index, follow">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "NYC Elevator Complaint Data — Elevator Advocate",
+    "description": "{{ stats.total_complaints_12mo|intcomma }} elevator complaints filed across New York City in the last 12 months.{% if stats.borough_breakdown %} Top borough: {{ stats.borough_breakdown.0.name }} ({{ stats.borough_breakdown.0.pct }}% of total).{% endif %} Includes borough breakdown, top buildings by complaint volume, and seasonal trends. July shows a sustained +35% seasonal spike above annual baseline.",
+    "url": "https://api.elevatoradvocate.nyc/api/data-ssr/",
+    "spatialCoverage": {
+      "@type": "Place",
+      "name": "New York City, NY, USA"
+    },
+    "temporalCoverage": "P12M",
+    "isBasedOn": {
+      "@type": "Dataset",
+      "name": "NYC Housing Maintenance Code Complaints",
+      "identifier": "kqwi-7ncn",
+      "url": "https://data.cityofnewyork.us/resource/kqwi-7ncn.json",
+      "publisher": {
+        "@type": "Organization",
+        "name": "NYC Open Data"
+      }
+    },
+    "variableMeasured": [
+      {
+        "@type": "PropertyValue",
+        "name": "Total elevator complaints (12 months)",
+        "value": "{{ stats.total_complaints_12mo }}"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Borough breakdown",
+        "description": "Complaint counts and percentages by NYC borough"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Seasonal complaint index",
+        "description": "Monthly complaint counts for the current calendar year; July typically runs +35% above annual baseline"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Building leaderboard",
+        "description": "Top buildings by elevator complaint volume in the last 12 months"
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f8f9fa;
+      padding: 2rem 1rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .stat-hero {
+      background: #003366;
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .stat-hero .label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.8;
+      margin-bottom: 0.5rem;
+    }
+    .stat-hero data {
+      display: block;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .stat-hero .sub {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+    section {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e0e0e0;
+    }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #003366;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    caption {
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 0.5rem;
+      text-align: left;
+    }
+    th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      background: #f0f4f8;
+      font-weight: 600;
+      border-bottom: 2px solid #d0d8e0;
+    }
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #eee;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafcff; }
+    .pct-bar {
+      display: inline-block;
+      height: 10px;
+      background: #003366;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    .seasonal-note {
+      background: #fff8e1;
+      border-left: 4px solid #f59e0b;
+      padding: 1rem 1.25rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.95rem;
+    }
+    footer {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #555;
+      text-align: center;
+    }
+    footer a { color: #003366; }
+    .redirect-notice {
+      background: #e8f0fe;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    .redirect-notice a { color: #003366; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <h1 class="visually-hidden">NYC Elevator Complaint Data — Elevator Advocate</h1>
+
+  <noscript>
+    <div class="redirect-notice">
+      You are viewing the static data snapshot. Visit
+      <a href="https://elevatoradvocate.nyc/data">elevatoradvocate.nyc/data</a>
+      for the interactive version.
+    </div>
+  </noscript>
+
+  <!-- Hero stat -->
+  <div class="stat-hero">
+    <p class="label">Elevator complaints filed in the last 12 months</p>
+    <data value="{{ stats.total_complaints_12mo }}">{{ stats.total_complaints_12mo|intcomma }}</data>
+    <p class="sub">Across all five NYC boroughs &mdash; source: NYC Open Data (kqwi-7ncn)</p>
+  </div>
+
+  <!-- Borough breakdown -->
+  <section>
+    <h2>Complaints by Borough</h2>
+    {% if stats.borough_breakdown %}
+    <table>
+      <caption>Elevator complaint counts and share of total, last 12 months</caption>
+      <thead>
+        <tr>
+          <th scope="col">Borough</th>
+          <th scope="col">Complaints</th>
+          <th scope="col">Share</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in stats.borough_breakdown %}
+        <tr>
+          <td>{{ b.name }}</td>
+          <td>{{ b.count|intcomma }}</td>
+          <td>
+            <span class="pct-bar" style="width:{{ b.pct }}px" aria-hidden="true"></span>
+            {{ b.pct }}%
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>Borough data is currently unavailable.</p>
+    {% endif %}
+  </section>
+
+  <!-- Top buildings -->
+  <section>
+    <h2>Buildings with Most Complaints</h2>
+    {% if stats.top_buildings %}
+    <table>
+      <caption>Up to 15 NYC buildings with highest elevator complaint volume, last 12 months</caption>
+      <thead>
+        <tr>
+          <th scope="col">Address</th>
+          <th scope="col">Borough</th>
+          <th scope="col">Complaints</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bldg in stats.top_buildings %}
+        <tr>
+          <td>{{ bldg.address }}</td>
+          <td>{{ bldg.borough }}</td>
+          <td>{{ bldg.count|intcomma }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>Building data is currently unavailable.</p>
+    {% endif %}
+  </section>
+
+  <!-- Seasonal note -->
+  <section>
+    <h2>Seasonal Pattern</h2>
+    <div class="seasonal-note">
+      <strong>July spike (+35%):</strong> Elevator complaints consistently peak in July,
+      running approximately 35% above the annual monthly baseline. Summer heat accelerates
+      mechanical wear and increases call volume, placing disproportionate burden on buildings
+      whose residents — often elderly or mobility-impaired — have no alternative during outages.
+    </div>
+    {% if stats.monthly_current_year %}
+    <table style="margin-top:1rem;">
+      <caption>Monthly complaint counts, current calendar year</caption>
+      <thead>
+        <tr>
+          <th scope="col">Month</th>
+          <th scope="col">Complaints</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in stats.monthly_current_year %}
+        <tr>
+          <td>{{ m.month }}</td>
+          <td>{{ m.count|intcomma }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+
+  <footer>
+    <p>
+      Data source: <a href="https://data.cityofnewyork.us/resource/kqwi-7ncn.json" rel="noopener noreferrer">NYC Open Data — Housing Maintenance Code Complaints (kqwi-7ncn)</a>.
+      Statistics reflect complaints with category codes 6S (elevator) and 6M (elevator/escalator)
+      filed in the last 12 months.
+    </p>
+    <p style="margin-top:0.5rem;">
+      <a href="https://elevatoradvocate.nyc/data">View interactive data dashboard &rarr;</a>
+    </p>
+  </footer>
+
+  <script>
+    // Redirect JS-capable browsers to the interactive React app.
+    // Crawlers and LLM fetchers (which don't run JS) see the full HTML above.
+    (function () {
+      var ua = navigator.userAgent || "";
+      var isBot = ua.includes("bot") || ua.includes("crawler") || ua.includes("spider") ||
+                  ua.includes("Googlebot") || ua.includes("GPTBot") || ua.includes("Claude");
+      if (!isBot) {
+        window.location.replace("https://elevatoradvocate.nyc/data");
+      }
+    })();
+  </script>
+
+</body>
+</html>

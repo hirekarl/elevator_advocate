@@ -195,6 +195,16 @@ function DataPage() {
     handleAuthSuccess
   } = useAuth();
 
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'alternate';
+    link.href = 'https://api.elevatoradvocate.nyc/api/data-ssr/';
+    link.type = 'text/html';
+    link.title = 'Elevator Advocate Data Stories — crawler-accessible version';
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, []);
+
   const toggleLanguage = () => {
     const next = i18n.language === 'en' ? 'es' : 'en';
     i18n.changeLanguage(next);
