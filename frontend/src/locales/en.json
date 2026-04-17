@@ -265,5 +265,6 @@
   "ac_method_axe": "axe-core — 6 user journeys",
   "ac_method_lhci": "Lighthouse CI on every build",
   "ac_method_wcag": "WCAG 2.2 AA color tokens",
-  "ac_test_count_label": "Martha journey tests"
+  "ac_test_count_label": "Martha journey tests",
+  "toggle_language": "Switch language"
 }

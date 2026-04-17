@@ -265,5 +265,6 @@
   "ac_method_axe": "axe-core — 6 recorridos de usuario",
   "ac_method_lhci": "Lighthouse CI en cada compilación",
   "ac_method_wcag": "Tokens de color WCAG 2.2 AA",
-  "ac_test_count_label": "pruebas del recorrido de Martha"
+  "ac_test_count_label": "pruebas del recorrido de Martha",
+  "toggle_language": "Cambiar idioma"
 }

@@ -1,4 +1,4 @@
-import { Navbar, Container, Button, Dropdown } from 'react-bootstrap';
+import { Navbar, Container, Button, Dropdown, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -21,7 +21,10 @@ export function AppNavbar({
 }: AppNavbarProps) {
   const { t, i18n } = useTranslation();
 
+  const isNonEnglish = i18n.language !== 'en';
+
   return (
+    <>
     <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top py-2 py-lg-3 app-navbar" aria-label={t('guide_modal_label')}>
       <Container>
         <Navbar.Brand
@@ -53,7 +56,7 @@ export function AppNavbar({
             aria-label={t('toggle_language')}
             className="me-2 me-md-3 border-0 fw-bold"
           >
-            <span aria-hidden="true">🌐</span> {i18n.language === 'en' ? 'ES' : 'EN'}
+            <span aria-hidden="true">🌐</span> {{ en: 'ES', es: '中文', zh: 'বাং', bn: 'EN' }[i18n.language] ?? 'ES'}
           </Button>
           {isLoggedIn ? (
             <Dropdown align="end">
@@ -78,5 +81,12 @@ export function AppNavbar({
         </div>
       </Container>
     </Navbar>
+    {isNonEnglish && (
+      <Alert variant="warning" className="rounded-0 py-1 px-3 mb-0 text-center small border-0">
+        Translations are machine-generated and may contain errors.{' '}
+        <a href="mailto:karl.saint.lucy@gmail.com" className="alert-link">Help us improve them.</a>
+      </Alert>
+    )}
+    </>
   );
 }

@@ -85,7 +85,8 @@ function MainDashboard() {
   };
 
   const toggleLanguage = () => {
-    const next = i18n.language === 'en' ? 'es' : 'en';
+    const cycle: Record<string, string> = { en: 'es', es: 'zh', zh: 'bn', bn: 'en' };
+    const next = cycle[i18n.language] ?? 'en';
     i18n.changeLanguage(next);
     document.documentElement.lang = next;
   };
@@ -206,7 +207,8 @@ function DataPage() {
   }, []);
 
   const toggleLanguage = () => {
-    const next = i18n.language === 'en' ? 'es' : 'en';
+    const cycle: Record<string, string> = { en: 'es', es: 'zh', zh: 'bn', bn: 'en' };
+    const next = cycle[i18n.language] ?? 'en';
     i18n.changeLanguage(next);
     document.documentElement.lang = next;
   };

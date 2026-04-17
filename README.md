@@ -20,8 +20,9 @@ In my building, a broken elevator is more than a maintenance delay—it's a cris
 7. [Data Research & Insights](#-data-research--insights)
 8. [Multi-Agent Development: How This Was Built](#-multi-agent-development-how-this-was-built)
 9. [Tech Stack](#-tech-stack)
-10. [Getting Started](#-getting-started)
-11. [Strategic Path Forward](#-strategic-path-forward)
+10. [Localization](#-localization)
+11. [Getting Started](#-getting-started)
+12. [Strategic Path Forward](#-strategic-path-forward)
 
 ---
 
@@ -283,10 +284,22 @@ The 62-commit log (`git log --oneline`) is the clearest artifact of how this sys
 ## 💻 Tech Stack
 
 - **Backend**: Django 6.0, Django REST Framework, PostgreSQL.
-- **Frontend**: React 19, TypeScript, Vite, React Bootstrap 5, Leaflet maps, i18next (EN/ES).
+- **Frontend**: React 19, TypeScript, Vite, React Bootstrap 5, Leaflet maps, i18next (EN/ES/ZH/BN).
 - **Orchestration**: Custom Python multi-agent system (Gemini 2.5 Flash).
 - **Package Management**: `uv` for fast, reproducible Python environments.
 - **Standards**: Ruff + mypy for Python; tsc + ESLint for TypeScript; Playwright + axe-core for accessibility.
+
+---
+
+## 🌐 Localization
+
+The platform supports four languages, toggled via the globe button in the navbar: **English → Spanish → 中文 (Simplified Chinese) → বাংলা (Bengali) → English**.
+
+> **Note:** All non-English translations are machine-generated and should be considered a first pass. They have not been reviewed by native speakers, and civic/legal terminology (311 scripts, housing court references, emergency copy) may be inaccurate or unnatural.
+>
+> Community review is strongly encouraged — especially for Mandarin and Bengali, given the size of those communities in NYC. If you can help review or improve a translation, please open a PR or email [karl.saint.lucy@gmail.com](mailto:karl.saint.lucy@gmail.com).
+
+Translation files live in `frontend/src/locales/`. Each language is a single flat JSON file keyed to the same keys as `en.json`.
 
 ---
 
