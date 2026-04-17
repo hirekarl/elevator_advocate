@@ -208,19 +208,18 @@ class Command(BaseCommand):
         # e.g. "341 EAST 162 ST" → house_number="341", house_street="EAST 162 ST"
         house_number = str(spec["house_number"])
         house_street = str(spec["soda_address"]).split(" ", 1)[1]
-        params: dict[str, Any] = {
-            "$where": (
-                f"house_number='{house_number}'"
-                f" AND house_street='{house_street}'"
-            ),
-            "$select": "bin,house_number,house_street,latitude,longitude",
-            "$limit": 1,
-        }
+        # Build URL manually — requests.get(params=) encodes '$' as '%24',
+        # which SODA rejects. Raw string keeps literal $where=.
+        qs = (
+            f"$where=house_number='{house_number}' AND house_street='{house_street}'"
+            f"&$select=bin,house_number,house_street,latitude,longitude"
+            f"&$limit=1"
+        )
         if app_token:
-            params["$$app_token"] = app_token
+            qs += f"&$$app_token={app_token}"
 
         try:
-            response = requests.get(SODA_BASE_URL, params=params, timeout=10)
+            response = requests.get(SODA_BASE_URL + "?" + qs, timeout=10)
             response.raise_for_status()
             records = response.json()
             if records:
