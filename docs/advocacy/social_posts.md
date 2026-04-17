@@ -75,7 +75,7 @@ We're in MVP now, targeting six priority council districts in the Bronx and Broo
 
 ## Notes
 
-- Fill in `[VIDEO LINK]` in the email before sending; consider adding it to the LinkedIn post as well once the video is live.
+- **Sanchez email sent 2026-04-17** — video link removed; email directs him to the live platform at elevatoradvocate.nyc. Awaiting response.
 - Twitter Option B (thread) typically outperforms single tweets for civic content — the thread format signals there's substance worth reading.
-- LinkedIn post can go out independently of the councilmember outreach. Different audience, no coordination needed.
-- Hold the Sanchez email until you have the video link ready.
+- LinkedIn post can go out independently of the councilmember outreach. Different audience, no coordination needed. No video required — platform link is sufficient.
+- If a video walkthrough is produced later, add it to the LinkedIn post and use it for Housing & Buildings Committee outreach.

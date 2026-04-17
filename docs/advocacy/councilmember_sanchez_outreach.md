@@ -22,9 +22,7 @@ Dear Councilmember Sanchez,
 
 My name is Karl Johnson. I'm a District 17 resident and a fellow at Pursuit, and I've built something I think your housing team needs to see before summer.
 
-It's called **Elevator Advocate** — a free platform that turns elevator outages into hard, documented evidence. You can try it right now at [elevatoradvocate.nyc](https://www.elevatoradvocate.nyc), or watch a two-minute walkthrough here:
-
-**[VIDEO LINK]**
+It's called **Elevator Advocate** — a free platform that turns elevator outages into hard, documented evidence. You can try it right now at [elevatoradvocate.nyc](https://www.elevatoradvocate.nyc).
 
 The urgency is real: NYC's own complaint data shows elevator failures spike every July — 33% above the annual average, without exception, going back to 2018. Buildings like 1150 Tiffany Street in Hunts Point have logged 12 complaints in the past year alone. For the rent-stabilized and NYCHA buildings across Port Morris, Mott Haven, Hunts Point, and Longwood, that window is weeks away.
 
