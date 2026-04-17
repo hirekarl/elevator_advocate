@@ -239,7 +239,7 @@ export function AdvocacySections() {
                 {t('adv_council_cta_primary')}
               </a>
               <a
-                href="#main-content"
+                href="/building/2034290"
                 className="btn advocacy-cta-btn-secondary"
               >
                 {t('adv_council_cta_secondary')}

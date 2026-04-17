@@ -236,6 +236,10 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet[Building]):
             recent_reports, many=True
         ).data
 
+        # Auto-fetch news on first visit if it has never been fetched.
+        if not instance.last_news_refresh:
+            fetch_building_news.enqueue(bin=instance.bin)
+
         return Response(data)
 
     @action(detail=True, methods=["get"])
