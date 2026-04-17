@@ -3,7 +3,7 @@
 
 **Recipient:** Councilmember Justin Sanchez  
 **From:** Karl Johnson  
-**Subject:** A Gift of Service for District 17: Dignity Through Data for Our Neighbors  
+**Subject:** Elevator Advocate — a free tool for District 17 tenants, before summer  
 
 ---
 
@@ -15,7 +15,7 @@ I’ve put together a short video showing exactly what that looks like — and w
 
 **[VIDEO LINK]**
 
-In District 17, a broken elevator is more than a maintenance delay; it is a crisis of mobility and dignity. And the timing of this letter is not accidental: an analysis of NYC’s own complaint data shows that elevator failures spike every summer, with July averaging **33% more complaints** than the rest of the year. For the rent-stabilized and NYCHA buildings in Port Morris, Mott Haven, and Melrose, that window is weeks away.
+In District 17, a broken elevator is more than a maintenance delay; it is a crisis of mobility and dignity. And the timing of this letter is not accidental: an analysis of NYC’s own complaint data shows that elevator failures spike every summer, with July averaging **33% more complaints** than the rest of the year — a pattern that holds without exception going back to 2018. Buildings like 1150 Tiffany Street in Hunts Point have logged 12 complaints in the past year alone. For the rent-stabilized and NYCHA buildings in Port Morris, Mott Haven, Hunts Point, and Longwood, that window is weeks away.
 
 The platform in the video is called **Elevator Advocate**. It turns these seasonal crises into hard, actionable data:
 
