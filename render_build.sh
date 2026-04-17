@@ -39,6 +39,4 @@ uv run python manage.py backfill_council_districts
 echo "Seeding pilot buildings..."
 uv run python manage.py seed_pilot_buildings
 
-# Pre-generate and cache Executive Advocacy Summaries
-echo "Generating advocacy summaries..."
-uv run python manage.py generate_summaries
+# Advocacy summaries are generated lazily on first request — no deploy step needed.
