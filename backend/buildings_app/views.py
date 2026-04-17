@@ -122,7 +122,9 @@ class AuthViewSet(viewsets.ViewSet):
             profile.save()
             return Response(
                 {
-                    "message": f"Successfully set {building.address} as your home building.",
+                    "message": (
+                        f"Successfully set {building.address} as your home building."
+                    ),
                     "primary_building": {
                         "bin": building.bin,
                         "address": building.address,
@@ -240,6 +242,7 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet[Building]):
         # Run in a daemon thread so ImmediateBackend doesn't block the response.
         if not instance.last_news_refresh:
             import threading
+
             threading.Thread(
                 target=fetch_building_news.enqueue,
                 kwargs={"bin": instance.bin},
@@ -428,7 +431,11 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet[Building]):
             return Response(
                 {
                     "error": "Address not recognized.",
-                    "message": f"'{house_number} {street}' in {borough} was not found in NYC's official building records. Please check the spelling or house number.",
+                    "message": (
+                        f"'{house_number} {street}' in {borough} was not found in "
+                        "NYC's official building records. Please check the spelling "
+                        "or house number."
+                    ),
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -453,7 +460,8 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet[Building]):
     @action(detail=False, methods=["get"])
     def map(self, request):
         """
-        Returns a list of buildings with coordinates and verified status for map display.
+        Returns a list of buildings with coordinates and verified status
+        for map display.
         """
         buildings = Building.objects.exclude(latitude__isnull=True)
         serializer = self.get_serializer(buildings, many=True)
@@ -480,7 +488,9 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet[Building]):
         if status_value not in valid_statuses:
             return Response(
                 {
-                    "error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+                    "error": (
+                        f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+                    )
                 },
                 status=400,
             )
