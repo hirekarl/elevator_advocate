@@ -297,7 +297,7 @@ The platform supports four languages, toggled via the globe button in the navbar
 
 > **Note:** All non-English translations are machine-generated and should be considered a first pass. They have not been reviewed by native speakers, and civic/legal terminology (311 scripts, housing court references, emergency copy) may be inaccurate or unnatural.
 >
-> Community review is strongly encouraged — especially for Mandarin and Bengali, given the size of those communities in NYC. If you can help review or improve a translation, please open a PR or email [karl.saint.lucy@gmail.com](mailto:karl.saint.lucy@gmail.com).
+> Community review is strongly encouraged — especially for Mandarin and Bengali, given the size of those communities in NYC. If you can help review or improve a translation, please open a PR.
 
 Translation files live in `frontend/src/locales/`. Each language is a single flat JSON file keyed to the same keys as `en.json`.
 

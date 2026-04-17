@@ -83,8 +83,7 @@ export function AppNavbar({
     </Navbar>
     {isNonEnglish && (
       <Alert variant="warning" className="rounded-0 py-1 px-3 mb-0 text-center small border-0">
-        Translations are machine-generated and may contain errors.{' '}
-        <a href="mailto:karl.saint.lucy@gmail.com" className="alert-link">Help us improve them.</a>
+        Translations are machine-generated and may contain errors.
       </Alert>
     )}
     </>
