@@ -1,18 +1,16 @@
-from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.db.models import Q
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import permissions, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .logic import ConsensusManager
-from .models import Building
+from .models import Building, UserProfile
 from .serializers import (
     AdvocacyLogSerializer,
     BuildingSerializer,
@@ -167,29 +165,22 @@ class AuthViewSet(viewsets.ViewSet):
         if User.objects.filter(username=username).exists():
             return Response({"error": "Username already exists."}, status=400)
 
+        # MVP: activate immediately. Email confirmation to be restored before
+        # wider distribution (requires transactional email backend + dynamic URL).
         user = User.objects.create_user(
             username=username, email=email, password=password
         )
-        user.is_active = False  # Deactivate until email is confirmed
-        user.save()
-
-        # Generate confirmation link
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        confirm_url = f"http://localhost:5173/confirm/{uid}/{token}/"
-
-        # Send email (console in dev)
-        send_mail(
-            "Confirm Your Account",
-            f"Welcome to Elevator Advocacy! Click here to confirm your email: {confirm_url}",
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
+        token, _ = Token.objects.get_or_create(user=user)
+        profile, _ = UserProfile.objects.get_or_create(user=user)
 
         return Response(
             {
-                "message": "Signup successful. Check your terminal (local dev) or email for confirmation link."
+                "message": "Signup successful.",
+                "token": token.key,
+                "username": user.username,
+                "primary_building": profile.primary_building.bin
+                if profile.primary_building
+                else None,
             },
             status=201,
         )
