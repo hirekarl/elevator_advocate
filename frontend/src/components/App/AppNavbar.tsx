@@ -33,6 +33,12 @@ export function AppNavbar({
           ELEVATOR ADVOCATE
         </Navbar.Brand>
         <div className="d-flex align-items-center ms-auto">
+          <Link
+            to="/data"
+            className="ds-nav-link me-2 me-md-3 fs-7"
+          >
+            {t('nav_data')}
+          </Link>
           <Button
             variant="link"
             className="text-info text-decoration-none fw-bold me-2 me-md-3 p-0 fs-7 fs-md-6"

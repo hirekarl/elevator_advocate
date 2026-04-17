@@ -17,6 +17,7 @@ import { AuthModal } from './components/App/AuthModal';
 import { UserGuideModal } from './components/App/UserGuideModal';
 import { LandingPage } from './components/App/LandingPage';
 import { BuildingPage } from './components/App/BuildingPage';
+import { DataStories } from './components/App/DataStories';
 
 function MainDashboard() {
   const { t, i18n } = useTranslation();
@@ -186,6 +187,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainDashboard />} />
         <Route path="/building/:bin" element={<MainDashboard />} />
+        <Route path="/data" element={<DataStories />} />
         <Route path="/confirm/:uid/:token" element={<ConfirmEmail />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -481,3 +481,5 @@ $RECYCLE.BIN/
 # Playwright
 frontend/playwright-report/
 frontend/test-results/
+# Lighthouse CI output
+.lighthouseci/

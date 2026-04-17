@@ -4,16 +4,15 @@
    Palette   : Navy / Ivory / Amber / Status
    =================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Mulish:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
-
 /* === TOKENS ============================================= */
 :root {
   --c-navy:       #0d1b2a;
   --c-navy-mid:   #1a3352;
   --c-navy-lt:    #2a4a6e;
-  --c-amber:      #e8920a;
-  --c-amber-dk:   #c67c08;
-  --c-amber-lt:   #fef3dc;
+  --c-amber:         #e8920a;
+  --c-amber-dk:      #c67c08;
+  --c-amber-lt:      #fef3dc;
+  --c-amber-on-light: #9a5a00; /* WCAG AA on white and ivory (5.4:1 / 4.8:1) */
   --c-red:        #c8281c;
   --c-red-lt:     #fde8e6;
   --c-green:      #1a7a4a;
@@ -606,7 +605,7 @@ h1, h2, h3, h4, h5, h6,
 .advocacy-persona-descriptor {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--c-amber);
+  color: var(--c-amber-on-light);
 }
 
 .advocacy-persona-quote {
@@ -788,7 +787,7 @@ h1, h2, h3, h4, h5, h6,
 .advocacy-council-footnote {
   font-family: 'Mulish', sans-serif;
   font-size: 0.75rem;
-  color: rgba(13, 27, 42, 0.55);
+  color: var(--c-navy);
 }
 
 /* ── Builder Attribution Section ────────────────────────────────── */
@@ -904,7 +903,7 @@ h1, h2, h3, h4, h5, h6,
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.38);
+  color: rgba(255, 255, 255, 0.60);
   margin-top: 0.5rem;
 }
 
@@ -915,4 +914,491 @@ h1, h2, h3, h4, h5, h6,
   color: var(--c-muted);
   margin-top: 0.6rem;
   letter-spacing: 0.02em;
+}
+
+/* === DATA STORIES PAGE ================================= */
+
+/* Hero — scale stat */
+.ds-hero {
+  background: linear-gradient(150deg, #0d1b2a 0%, #1a3352 55%, #0d2440 100%);
+  color: #fff;
+}
+
+.ds-hero-stat {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(3.5rem, 12vw, 7rem);
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: var(--c-amber);
+}
+
+.ds-hero-sub {
+  font-family: 'Mulish', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  color: rgba(255, 255, 255, 0.82);
+  margin-top: 0.75rem;
+  max-width: 520px;
+}
+
+.ds-cutoff-label {
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(254, 243, 220, 0.55); /* --c-amber-lt at reduced opacity */
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* Reporting gap callout */
+.ds-lag-section {
+  background-color: var(--c-ivory);
+  color: var(--c-navy);
+}
+
+.ds-lag-section .ds-section-heading {
+  color: var(--c-navy);
+}
+
+.ds-lag-section .ds-section-body {
+  color: var(--c-text);
+}
+
+.ds-lag-section .advocacy-section-label {
+  color: var(--c-amber-on-light);
+}
+
+.ds-lag-cta {
+  font-family: 'Mulish', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ds-lag-cta a {
+  color: var(--c-navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ds-lag-cta a:hover {
+  color: var(--c-amber-dk);
+}
+
+/* Borough bar chart */
+.ds-chart-heading {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 1.25rem;
+}
+
+.ds-borough-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 640px;
+}
+
+.ds-borough-row {
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .ds-borough-row {
+    grid-template-columns: 80px 1fr auto;
+    gap: 0.5rem;
+  }
+}
+
+.ds-borough-label {
+  font-family: 'Mulish', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+}
+
+.ds-borough-bar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.ds-borough-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  min-width: 4px;
+}
+
+.ds-borough-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 64px;
+}
+
+.ds-borough-count {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ds-borough-pct {
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Section headings (shared) */
+.ds-section-heading {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.4rem, 3.5vw, 2.1rem);
+  letter-spacing: -0.04em;
+  color: var(--c-navy);
+}
+
+.ds-section-heading--light {
+  color: #fff;
+}
+
+.ds-section-body {
+  font-family: 'Mulish', sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--c-muted);
+  max-width: 620px;
+}
+
+.ds-section-body--light {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Seasonal spike chart */
+.ds-seasonal-section {
+  background-color: var(--c-ivory);
+}
+
+.ds-seasonal-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 180px;
+  padding-bottom: 2rem;
+  position: relative;
+}
+
+@media (max-width: 480px) {
+  .ds-seasonal-chart {
+    gap: 2px;
+    height: 140px;
+  }
+}
+
+.ds-seasonal-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.ds-seasonal-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+
+.ds-seasonal-bar-fill {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+  transition: height 0.6s ease;
+}
+
+.ds-seasonal-annotation {
+  position: absolute;
+  top: -1.6rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--c-amber-on-light);
+  white-space: nowrap;
+}
+
+.ds-seasonal-month {
+  margin-top: 0.4rem;
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--c-muted);
+  text-align: center;
+}
+
+.ds-seasonal-month--peak {
+  color: var(--c-amber-on-light);
+  font-weight: 700;
+}
+
+.ds-chart-note {
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.75rem;
+  color: var(--c-muted);
+}
+
+/* Leaderboard */
+.ds-leaderboard-section {
+  background-color: var(--c-navy);
+}
+
+/* Leaderboard card grid */
+.ds-leaderboard {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .ds-leaderboard { grid-template-columns: 1fr; }
+}
+
+.ds-leaderboard-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: background 0.12s ease;
+}
+
+.ds-leaderboard-row--top {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(232, 146, 10, 0.25);
+}
+
+.ds-leaderboard-row:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+@media (max-width: 480px) {
+  .ds-leaderboard-row {
+    grid-template-columns: 32px 1fr auto;
+    gap: 0.5rem;
+  }
+  .ds-borough-badge {
+    display: none;
+  }
+}
+
+.ds-rank-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ds-rank-badge--top {
+  background: var(--c-amber);
+  color: var(--c-navy);
+}
+
+.ds-building-address {
+  font-family: 'Mulish', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ds-borough-badge {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+
+.ds-complaint-count {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--c-amber);
+  white-space: nowrap;
+}
+
+/* Leaderboard building cards (supersedes ds-leaderboard-row) */
+.ds-building-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: border-color 0.15s ease;
+}
+.ds-building-card:hover { border-color: rgba(255, 255, 255, 0.22); }
+
+.ds-building-card--top {
+  border-color: rgba(232, 146, 10, 0.45);
+  background: rgba(232, 146, 10, 0.07);
+}
+.ds-building-card--top:hover { border-color: rgba(232, 146, 10, 0.7); }
+
+.ds-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ds-card-address {
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: #fff;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.ds-borough-pill {
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 4px;
+  padding: 0.18em 0.55em;
+  white-space: nowrap;
+}
+
+.ds-card-footer {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ds-card-count {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #fff;
+  line-height: 1;
+}
+.ds-building-card--top .ds-card-count { color: var(--c-amber); }
+
+.ds-card-count-label {
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.70);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ds-card-district {
+  font-family: 'Mulish', sans-serif;
+  font-style: italic;
+  font-size: 0.75rem;
+  color: rgba(232, 146, 10, 0.8);
+  border-top: 1px solid rgba(232, 146, 10, 0.2);
+  padding-top: 0.45rem;
+  margin-top: 0.1rem;
+}
+
+/* Footer / attribution */
+.ds-footer-section {
+  background-color: var(--c-ivory);
+  border-top: 1px solid var(--c-border);
+}
+
+.ds-source-note {
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.75rem;
+  color: var(--c-muted);
+  margin-bottom: 1.5rem;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ds-cta-link {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--c-navy);
+  text-decoration: none;
+  border-bottom: 2px solid var(--c-amber);
+  padding-bottom: 2px;
+  transition: color 0.15s ease;
+}
+
+.ds-cta-link:hover {
+  color: var(--c-navy-mid);
+}
+
+/* Error / empty state */
+.ds-error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  padding: 3rem 1rem;
+}
+
+.ds-error-message {
+  font-family: 'Mulish', sans-serif;
+  font-size: 1rem;
+  color: var(--c-muted);
+  text-align: center;
+  margin: 0;
+}
+
+/* Navbar data link */
+.ds-nav-link {
+  font-family: 'Mulish', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.ds-nav-link:hover {
+  color: #fff !important;
 }
