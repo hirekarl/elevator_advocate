@@ -242,15 +242,13 @@ export function AdvocacySections() {
               {t('adv_council_body')}
             </p>
             <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
-              <a
-                href="https://www.linkedin.com/in/hirekarl"
+              <Link
+                to="/district/17"
                 className="btn advocacy-cta-btn-primary"
-                target="_blank"
-                rel="noopener noreferrer"
                 aria-label={t('adv_council_cta_primary_aria')}
               >
                 {t('adv_council_cta_primary')}
-              </a>
+              </Link>
               <a
                 href="/building/2034290"
                 className="btn advocacy-cta-btn-secondary"

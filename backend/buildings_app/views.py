@@ -17,14 +17,101 @@ from rest_framework.response import Response
 from orchestration.supervisor import Supervisor
 
 from .logic import ConsensusManager
-from .models import Building, UserProfile
+from .models import Building, CouncilDistrict, UserProfile
 from .serializers import (
     AdvocacyLogSerializer,
     BuildingSerializer,
+    CouncilDistrictSerializer,
     ElevatorReportSerializer,
     ReportStatusSerializer,
 )
 from .tasks import fetch_building_news
+
+
+class DistrictViewSet(viewsets.ReadOnlyModelViewSet[CouncilDistrict]):
+    """
+    API endpoint for viewing Council Districts and their aggregated reports.
+    """
+
+    queryset = CouncilDistrict.objects.all()
+    serializer_class = CouncilDistrictSerializer
+    lookup_field = "district_id"
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=True, methods=["get"])
+    def report(self, request, district_id=None):
+        """
+        Returns an aggregated advocacy report for the specified district.
+        Includes Loss of Service metrics and a leaderboard of offending buildings.
+        """
+        district = self.get_object()
+        buildings = Building.objects.filter(city_council_district=district.district_id)
+
+        if not buildings.exists():
+            return Response(
+                {
+                    "district": district.district_id,
+                    "member": district.member_name,
+                    "message": "No buildings currently tracked in this district.",
+                    "stats": {
+                        "total_buildings": 0,
+                        "avg_loss_of_service": 0.0,
+                        "active_outages": 0,
+                    },
+                    "top_offenders": [],
+                }
+            )
+
+        manager = ConsensusManager()
+        
+        # Aggregated Metrics
+        total_buildings = buildings.count()
+        los_values = [
+            manager.get_loss_of_service_percentage(b) for b in buildings
+        ]
+        avg_los = sum(los_values) / len(los_values) if los_values else 0.0
+
+        # Active Outages (Verified DOWN)
+        active_outages = 0
+        for b in buildings:
+            if manager.get_verified_status(b) == "DOWN":
+                active_outages += 1
+
+        # Top Offenders (by complaint count in last 30 days)
+        # Using a simple sort for MVP; could be optimized with ORM annotation
+        offender_list = []
+        for b in buildings:
+            complaint_count = b.reports.filter(
+                reported_at__gte=timezone.now() - timedelta(days=30)
+            ).count()
+            if complaint_count > 0:
+                offender_list.append({
+                    "bin": b.bin,
+                    "address": b.address,
+                    "management_company": b.management_company or "Unknown Management",
+                    "owner_name": b.owner_name or "Unknown Owner",
+                    "complaint_count": complaint_count,
+                    "loss_of_service": manager.get_loss_of_service_percentage(b)
+                })
+        
+        top_offenders = sorted(
+            offender_list, key=lambda x: x["complaint_count"], reverse=True
+        )[:10]
+
+        return Response({
+            "district": district.district_id,
+            "member": district.member_name,
+            "contact": {
+                "email": district.email,
+                "phone": district.phone,
+            },
+            "stats": {
+                "total_buildings": total_buildings,
+                "avg_loss_of_service": round(avg_los, 2),
+                "active_outages": active_outages,
+            },
+            "top_offenders": top_offenders,
+        })
 
 
 class AuthViewSet(viewsets.ViewSet):

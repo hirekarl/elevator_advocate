@@ -18,6 +18,7 @@ import { UserGuideModal } from './components/App/UserGuideModal';
 import { LandingPage } from './components/App/LandingPage';
 import { BuildingPage } from './components/App/BuildingPage';
 import { DataStories } from './components/App/DataStories';
+import { DistrictReport } from './components/App/DistrictReport';
 
 function MainDashboard() {
   const { t, i18n } = useTranslation();
@@ -233,6 +234,49 @@ function DataPage() {
   );
 }
 
+function DistrictPage() {
+  const { i18n } = useTranslation();
+
+  const {
+    isLoggedIn,
+    username,
+    showAuthModal,
+    setShowAuthModal,
+    showGuide,
+    setShowGuide,
+    handleLogout,
+    handleAuthSuccess
+  } = useAuth();
+
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    document.documentElement.lang = lang;
+  };
+
+  return (
+    <>
+      <AppNavbar
+        isLoggedIn={isLoggedIn}
+        username={username}
+        onLogout={handleLogout}
+        onShowAuthModal={() => setShowAuthModal(true)}
+        onShowGuide={() => setShowGuide(true)}
+        changeLanguage={changeLanguage}
+      />
+      <AuthModal
+        show={showAuthModal}
+        onHide={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
+      <UserGuideModal
+        show={showGuide}
+        onHide={() => setShowGuide(false)}
+      />
+      <DistrictReport />
+    </>
+  );
+}
+
 function App() {
   return (
     <Router>
@@ -240,6 +284,7 @@ function App() {
         <Route path="/" element={<MainDashboard />} />
         <Route path="/building/:bin" element={<MainDashboard />} />
         <Route path="/data" element={<DataPage />} />
+        <Route path="/district/:id" element={<DistrictPage />} />
         <Route path="/confirm/:uid/:token" element={<ConfirmEmail />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

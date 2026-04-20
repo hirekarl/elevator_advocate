@@ -2,7 +2,17 @@ from typing import Any
 
 from rest_framework import serializers
 
-from .models import AdvocacyLog, Building, BuildingNews, ElevatorReport
+from .models import AdvocacyLog, Building, BuildingNews, CouncilDistrict, ElevatorReport
+
+
+class CouncilDistrictSerializer(serializers.ModelSerializer[CouncilDistrict]):
+    """
+    Serializer for NYC Council District metadata.
+    """
+
+    class Meta:
+        model = CouncilDistrict
+        fields = ["district_id", "member_name", "email", "phone", "committees", "last_synced"]
 
 
 class BuildingNewsSerializer(serializers.ModelSerializer[BuildingNews]):

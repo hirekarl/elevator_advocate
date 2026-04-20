@@ -46,34 +46,40 @@ class SODAService:
             print(f"SODA Error: {e}")
             return []
 
-    def get_recent_outages(self, hours: int = 24) -> List[Dict[str, Any]]:
+    def get_recent_outages(
+        self, hours: int = 24, borough_code: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """
-        Fetches all elevator-related outages across NYC from the last N hours.
-        If hours=0, fetches the absolute most recent N outages regardless of time.
+        Fetches elevator-related outages across NYC.
+        If hours > 0: Fetches outages from the last N hours.
+        If hours == 0: Fetches ALL-TIME outages (limited to 50k for safety).
+        If borough_code is provided (e.g. '2' for Bronx), filters by that borough.
         """
-        # SODA floating timestamp format: YYYY-MM-DDTHH:MM:SS
+        base_where = "complaint_category IN ('6S', '6M')"
+        if borough_code:
+            # SODA community_board starts with borough code (1=MN, 2=BX, etc)
+            base_where += f" AND community_board LIKE '{borough_code}%'"
+
         if hours > 0:
             limit_date = (timezone.now() - timedelta(hours=hours)).strftime(
                 "%Y-%m-%dT%H:%M:%S"
             )
-            where_clause = (
-                f"complaint_category IN ('6S', '6M') AND date_entered > '{limit_date}'"
-            )
+            where_clause = f"{base_where} AND date_entered > '{limit_date}'"
             params: Dict[str, Any] = {
                 "$where": where_clause,
                 "$$app_token": self.app_token,
             }
         else:
-            where_clause = "complaint_category IN ('6S', '6M')"
+            # All-time historical ingestion
             params = {
-                "$where": where_clause,
+                "$where": base_where,
                 "$order": "date_entered DESC",
-                "$limit": 1000,
+                "$limit": 50000,
                 "$$app_token": self.app_token,
             }
 
         try:
-            response = requests.get(self.BASE_URL, params=params, timeout=30)
+            response = requests.get(self.BASE_URL, params=params, timeout=60)
             response.raise_for_status()
             data = response.json()
             if isinstance(data, list):
@@ -82,6 +88,42 @@ class SODAService:
         except requests.RequestException as e:
             print(f"SODA Sync Error: {e}")
             return []
+
+    def get_management_data(self, bin: str) -> Dict[str, Optional[str]]:
+        """
+        Queries MapPLUTO (64uk-42ks) to find the owner for a given BIN.
+        Note: PLUTO uses BBL, so we first need to resolve BIN to BBL.
+        """
+        # 1. Resolve BIN to BBL using Building Footprints (5zhs-2jue)
+        FOOTPRINTS_URL = "https://data.cityofnewyork.us/resource/5zhs-2jue.json"
+        PLUTO_URL = "https://data.cityofnewyork.us/resource/64uk-42ks.json"
+        
+        try:
+            # Step A: Get BBL
+            f_resp = requests.get(FOOTPRINTS_URL, params={"bin": bin, "$limit": 1}, timeout=10)
+            f_resp.raise_for_status()
+            f_data = f_resp.json()
+            if not f_data:
+                return {"management_company": None, "owner_name": None}
+            
+            bbl = f_data[0].get("mappluto_bbl")
+            if not bbl:
+                return {"management_company": None, "owner_name": None}
+
+            # Step B: Get Owner from PLUTO
+            p_resp = requests.get(PLUTO_URL, params={"bbl": bbl, "$limit": 1}, timeout=10)
+            p_resp.raise_for_status()
+            p_data = p_resp.json()
+            if p_data:
+                owner = p_data[0].get("ownername")
+                return {
+                    "management_company": owner, # Using owner as proxy for management
+                    "owner_name": owner,
+                }
+        except Exception as e:
+            print(f"PLUTO Lookup Error for BIN {bin}: {e}")
+
+        return {"management_company": None, "owner_name": None}
 
     def get_city_stats(self) -> Dict[str, Any]:
         """

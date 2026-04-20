@@ -17,6 +17,8 @@ class Building(models.Model):
     city_council_district = models.CharField(max_length=10, null=True, blank=True)
     state_assembly_district = models.CharField(max_length=10, null=True, blank=True)
     state_senate_district = models.CharField(max_length=10, null=True, blank=True)
+    management_company = models.CharField(max_length=200, null=True, blank=True)
+    owner_name = models.CharField(max_length=200, null=True, blank=True)
     last_news_refresh = models.DateTimeField(null=True, blank=True)
     cached_executive_summary = models.JSONField(null=True, blank=True)
     summary_last_generated = models.DateTimeField(null=True, blank=True)
