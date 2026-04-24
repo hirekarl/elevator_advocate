@@ -64,9 +64,7 @@ class Command(BaseCommand):
             )
             output_path = os.path.normpath(base)
 
-        buildings = Building.objects.filter(city_council_district=district_id).order_by(
-            "address"
-        )
+        buildings = Building.objects.filter(city_council_district=district_id)
 
         manager = ConsensusManager()
         fieldnames = [
@@ -81,50 +79,60 @@ class Command(BaseCommand):
             "AI Headline",
         ]
 
-        rows_written = 0
+        rows = []
         chronic_count = 0
+
+        for building in buildings:
+            counts = manager.get_chronic_offender_data(building)
+            is_chronic = counts is not None
+
+            if chronic_only and not is_chronic:
+                continue
+
+            los = manager.get_loss_of_service_percentage(building)
+            summary = building.cached_executive_summary
+            en_summary = summary.get("en", {}) if summary else {}
+            headline = en_summary.get("headline", "No recent complaint activity recorded.")
+            risk_level = en_summary.get("risk_level", "Nominal")
+            complaints_12mo = counts["complaints_12mo"] if is_chronic else 0
+            complaints_3yr = counts["complaints_3yr"] if is_chronic else 0
+
+            rows.append(
+                {
+                    "_is_chronic": is_chronic,
+                    "_complaints_12mo": complaints_12mo,
+                    "_complaints_3yr": complaints_3yr,
+                    "BIN": building.bin,
+                    "Address": building.address,
+                    "Borough": building.borough,
+                    "Legal Owner (MapPLUTO)": building.owner_name or "UNAVAILABLE OWNER",
+                    "Complaints (12mo)": complaints_12mo,
+                    "Complaints (3yr)": complaints_3yr,
+                    "Loss of Service % (30d)": f"{los:.2f}%",
+                    "Risk Level": risk_level,
+                    "AI Headline": headline,
+                }
+            )
+            if is_chronic:
+                chronic_count += 1
+
+        # Chronic buildings first, ranked by 12mo desc then 3yr desc; nominal after.
+        rows.sort(
+            key=lambda r: (
+                0 if r["_is_chronic"] else 1,
+                -r["_complaints_12mo"],
+                -r["_complaints_3yr"],
+                r["Address"],
+            )
+        )
 
         with open(output_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
+            for row in rows:
+                writer.writerow({k: v for k, v in row.items() if not k.startswith("_")})
 
-            for building in buildings:
-                counts = manager.get_chronic_offender_data(building)
-                is_chronic = counts is not None
-
-                if chronic_only and not is_chronic:
-                    continue
-
-                los = manager.get_loss_of_service_percentage(building)
-
-                summary = building.cached_executive_summary
-                en_summary = summary.get("en", {}) if summary else {}
-                headline = en_summary.get(
-                    "headline", "No recent complaint activity recorded."
-                )
-                risk_level = en_summary.get("risk_level", "Nominal")
-
-                writer.writerow(
-                    {
-                        "BIN": building.bin,
-                        "Address": building.address,
-                        "Borough": building.borough,
-                        "Legal Owner (MapPLUTO)": building.owner_name
-                        or "UNAVAILABLE OWNER",
-                        "Complaints (12mo)": counts["complaints_12mo"]
-                        if is_chronic
-                        else 0,
-                        "Complaints (3yr)": counts["complaints_3yr"]
-                        if is_chronic
-                        else 0,
-                        "Loss of Service % (30d)": f"{los:.2f}%",
-                        "Risk Level": risk_level,
-                        "AI Headline": headline,
-                    }
-                )
-                rows_written += 1
-                if is_chronic:
-                    chronic_count += 1
+        rows_written = len(rows)
 
         self.stdout.write(
             self.style.SUCCESS(
