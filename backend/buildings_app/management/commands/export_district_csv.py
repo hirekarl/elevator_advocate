@@ -92,7 +92,9 @@ class Command(BaseCommand):
             los = manager.get_loss_of_service_percentage(building)
             summary = building.cached_executive_summary
             en_summary = summary.get("en", {}) if summary else {}
-            headline = en_summary.get("headline", "No recent complaint activity recorded.")
+            headline = en_summary.get(
+                "headline", "No recent complaint activity recorded."
+            )
             risk_level = en_summary.get("risk_level", "Nominal")
             complaints_12mo = counts["complaints_12mo"] if is_chronic else 0
             complaints_3yr = counts["complaints_3yr"] if is_chronic else 0
@@ -105,7 +107,8 @@ class Command(BaseCommand):
                     "BIN": building.bin,
                     "Address": building.address,
                     "Borough": building.borough,
-                    "Legal Owner (MapPLUTO)": building.owner_name or "UNAVAILABLE OWNER",
+                    "Legal Owner (MapPLUTO)": building.owner_name
+                    or "UNAVAILABLE OWNER",
                     "Complaints (12mo)": complaints_12mo,
                     "Complaints (3yr)": complaints_3yr,
                     "Loss of Service % (30d)": f"{los:.2f}%",
