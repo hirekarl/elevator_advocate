@@ -345,8 +345,8 @@ Translation files live in `frontend/src/locales/`. Each language is a single fla
 Our goal is to build a **Power Block** for tenants by turning personal stories into the kind of evidence that forces action:
 
 - **Direct Briefings**: We provide Councilmembers with Loss of Service reports to trigger DOB inquiries. See the [legislative briefing template](./docs/advocacy/outreach/legislative_briefing_template.md).
-- **Legal Weight**: We are working to ensure our data is admissible in court through partnerships like **Mobilization for Justice**.
-- **Grassroots Organizing**: We align with groups like **CASA** to put data directly into the hands of tenant unions. See the [council coalition plan](./docs/advocacy/outreach/strategy/council_coalition.md).
+- **Legal Weight**: We are building toward ensuring our data is admissible in court — timestamped, resident-verified outage records as litigation-grade evidence in Housing Court cases. *(Research needed: identify legal aid partners, e.g. Mobilization for Justice, TakeRoot Justice.)*
+- **Grassroots Organizing**: We are actively seeking partnerships with South Bronx tenant organizing groups to put data directly into the hands of tenant unions. See the [council coalition plan](./docs/advocacy/outreach/strategy/council_coalition.md).
 
 **Data is power.** When we move from anecdotes to evidence, we make sure landlords treat accessibility as a fundamental right, not a suggestion.
 
