@@ -56,8 +56,6 @@ class Command(BaseCommand):
                 "..",
                 "..",
                 "..",
-                "..",
-                "..",
                 "docs",
                 "advocacy",
                 "districts",
