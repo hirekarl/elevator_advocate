@@ -38,7 +38,7 @@
 - Building safety, air quality, heat — habitability as a climate resilience issue
 
 **Key contacts:**
-- **Wanda Salaman** — Executive Director (at MOM since 2002)
+- **Wanda Salaman** — Executive Director (at MOM since 2002) ⚠️ **MEDIUM confidence** — mothersonthemove.org is sparse; last substantive web presence February 2024. Org appears active but verify current status before outreach.
 
 **Fit for Elevator Advocate:** Strong. MOM's EJ framing explicitly covers building habitability and heat/safety — elevator access for seniors, families with strollers, and disabled residents is a natural extension. They've partnered across organizations and are open to tools that strengthen member organizing. Frame as a **habitability data tool** that feeds into their community safety work. Summer heat + broken elevator = life-threatening isolation for elderly residents lands immediately in their EJ lens.
 
@@ -52,7 +52,7 @@
 
 **Location:** Mott Haven-based; organized through South Bronx Tomorrow
 **Focus:** Grassroots tenant association organizing in privately-owned buildings across the South Bronx.
-**Key contact:** **Manny Pardilla** (organizer/coordinator)
+**Key contact:** **Manny Pardilla** (organizer/coordinator) ⚠️ **MEDIUM-LOW confidence** — leadership not recently verified as of April 2026. Confirm before outreach.
 
 **Current work:** Already uses strategic 311 complaint filing as core organizing tactic — one campaign filed ~100 violations in an 18-unit building using coordinated photo documentation. Works with TakeRoot Justice for legal support.
 
@@ -97,9 +97,9 @@
 
 ---
 
-## Northwest Bronx Community and Clergy Coalition (NWBCCC)
+## Our Bronx (formerly Northwest Bronx Community and Clergy Coalition / NWBCCC)
 
-**Website:** northwestbronx.org
+**Website:** ourbronx.org *(rebranded from northwestbronx.org — verified active April 2026)*
 **Focus:** Tenant association development, heat/repair organizing, housing preservation. Northwest and Central Bronx (overlaps Districts 17–18 Tremont area). Founded 1970s.
 
 **Current work:** Bronx Healthy Buildings Project, Bronx Community Land Trust, Tenants Demand Repairs campaign. Involved in HPD Heat Sensor Program. Featured in NYC Comptroller's 2025 "Turn Up the Heat" audit (Northwest Bronx led the city in heat complaints, 2023).
